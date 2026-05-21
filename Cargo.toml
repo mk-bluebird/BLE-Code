@@ -10,6 +10,7 @@ members = [
     "crates/ble-android-ffi",
     "crates/ble-tools-workspace-lint",
     "crates/ble-tools-ci-lint-github",
+    "crates/ble-tools-core-purity",
 ]
 
 [workspace.package]
