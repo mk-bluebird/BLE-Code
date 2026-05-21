@@ -1,0 +1,60 @@
+name: Tools CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "tools/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - ".github/workflows/tools-ci.yml"
+  pull_request:
+    paths:
+      - "tools/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - ".github/workflows/tools-ci.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE_24: "true"
+
+jobs:
+  workspace-members:
+    name: Workspace members check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tools/check_members.sh
+        run: |
+          chmod +x tools/check_members.sh
+          ./tools/check_members.sh
+
+  core-purity:
+    name: Core crate purity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tools/check_core_purity.sh
+        run: |
+          chmod +x tools/check_core_purity.sh
+          ./tools/check_core_purity.sh
+
+  code-patterns:
+    name: Code pattern guardrails
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tools/check_code_patterns.sh
+        run: |
+          chmod +x tools/check_code_patterns.sh
+          ./tools/check_code_patterns.sh
