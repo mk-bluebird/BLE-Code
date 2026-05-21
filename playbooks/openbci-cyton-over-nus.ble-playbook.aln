@@ -1,0 +1,136 @@
+playbook OpenBciCytonOverNusV1 {
+  version "1.0.0"
+
+  metadata {
+    description "Secure OpenBCI Cyton over Nordic UART passthrough configuration."
+    profile_ref "schemas/ble-profile.schema.v1.aln"
+    bci_stream_profile_ref "schemas/bci-stream-profile.openbci-cyton.v1.aln"
+  }
+
+  requires {
+    class_id "openbci-cyton-nus"
+    service_uuid "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"          // NUS service
+    characteristic_uuid "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // NUS RX notify
+
+    security {
+      require_encrypted true
+      require_bonded true
+      require_mic true
+      min_phy "LE1M"
+      max_phy "LE2M"
+    }
+
+    // This must be reflected in ServicePolicyV1.passthrough = true for this service.
+    passthrough true
+  }
+
+  steps [
+    step 1 {
+      name "scan_for_cyton"
+      intent {
+        kind "scan"
+        class_id "openbci-cyton-nus"
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Scan for devices advertising OpenBCI Cyton NUS service."
+    }
+
+    step 2 {
+      name "guard_connect_cyton"
+      intent {
+        kind "connect"
+        class_id "openbci-cyton-nus"
+        device_id "${selected_device_id}"
+      }
+      link_params {
+        phy "LE1M"
+        encrypted false
+        mic_present false
+        bonded false
+        conn_interval_ms 50
+        max_pdu_bytes 23
+        cte_present false
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Initial guard check for connect under default link parameters."
+    }
+
+    step 3 {
+      name "connect_cyton_via_platform_ble"
+      actuation_hint "Only execute if Step 2 guard_decision == Allowed."
+      notes "Connect and request encrypted, bonded, MIC-protected link."
+    }
+
+    step 4 {
+      name "guard_connect_cyton_after_negotiation"
+      intent {
+        kind "connect"
+        class_id "openbci-cyton-nus"
+        device_id "${selected_device_id}"
+      }
+      link_params {
+        phy "${negotiated_phy}"
+        encrypted "${negotiated_encrypted}"
+        mic_present "${negotiated_mic_present}"
+        bonded "${negotiated_bonded}"
+        conn_interval_ms "${negotiated_conn_interval_ms}"
+        max_pdu_bytes "${negotiated_max_pdu_bytes}"
+        cte_present "${negotiated_cte_present}"
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Guard enforces encryption, bonding, MIC, and PHY/PDU constraints."
+    }
+
+    step 5 {
+      name "guard_subscribe_cyton_stream"
+      intent {
+        kind "subscribe_characteristic"
+        class_id "openbci-cyton-nus"
+        device_id "${selected_device_id}"
+        service_uuid "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+        characteristic_uuid "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Guard must validate ServicePolicy.neurorights_tag == BciIntent, passthrough == true, and RoH budget."
+    }
+
+    step 6 {
+      name "subscribe_cyton_stream_via_platform_ble"
+      actuation_hint "Only execute if Step 5 guard_decision == Allowed."
+      notes "Subscribe to NUS RX; forward frames into BCI stream validator defined in bci-stream-profile."
+    }
+
+    step 7 {
+      name "configure_cyton_over_nus"
+      intent {
+        kind "write_characteristic"
+        class_id "openbci-cyton-nus"
+        device_id "${selected_device_id}"
+        service_uuid "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+        characteristic_uuid "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // NUS TX write
+        payload_len 1
+      }
+      link_params {
+        phy "${negotiated_phy}"
+        encrypted "${negotiated_encrypted}"
+        mic_present "${negotiated_mic_present}"
+        bonded "${negotiated_bonded}"
+        conn_interval_ms "${negotiated_conn_interval_ms}"
+        max_pdu_bytes "${negotiated_max_pdu_bytes}"
+        cte_present "${negotiated_cte_present}"
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Use only whitelisted OpenBCI command bytes defined in .bci-stream-profile.aln."
+    }
+  ]
+}
