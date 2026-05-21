@@ -1,0 +1,46 @@
+{
+  "subject": {
+    "subject_id": "perplexity-ble-guard-v1",
+    "roh_ceiling": 0.15,
+    "allow_ble": true,
+    "max_parallel_devices": 1
+  },
+  "device_class_policies": [
+    {
+      "class_id": "openbci-cyton-nus",
+      "min_phy": "LE1M",
+      "max_phy": "LE2M",
+      "require_encryption": true,
+      "require_mic": true,
+      "require_bonding": true,
+      "max_conn_interval_ms": 50,
+      "max_pdu_bytes": 64,
+      "allow_cte": false,
+      "allow_bci_payload": true
+    }
+  ],
+  "service_policies": [
+    {
+      "class_id": "openbci-cyton-nus",
+      "service_uuid": "6E400001-B5A3-F393-E0A9-E50E24DCCA9E",
+      "role": "Sensor",
+      "allow_read": false,
+      "allow_write": false,
+      "allow_notify": true,
+      "roh_weight": 0.10,
+      "neurorights_tag": "BciIntent",
+      "passthrough": true
+    },
+    {
+      "class_id": "openbci-cyton-nus",
+      "service_uuid": "6E400002-B5A3-F393-E0A9-E50E24DCCA9E",
+      "role": "Control",
+      "allow_read": false,
+      "allow_write": true,
+      "allow_notify": false,
+      "roh_weight": 0.05,
+      "neurorights_tag": "BciIntent",
+      "passthrough": true
+    }
+  ]
+}
