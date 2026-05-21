@@ -46,6 +46,11 @@ jobs:
           chmod +x tools/check_core_purity.sh
           ./tools/check_core_purity.sh
 
+      - name: Core purity (Rust)
+        run: |
+          BLE_CORE_PURITY_CONFIG=tools/core_purity.toml \
+          cargo run -p ble-tools-core-purity --quiet
+
   code-patterns:
     name: Code pattern guardrails
     runs-on: ubuntu-latest
