@@ -1,0 +1,119 @@
+schema BciStreamProfileOpenBciCytonV1 {
+  version "1.0.0"
+
+  enum OpenBciMessageKindV1 {
+    StartStream
+    StopStream
+    SoftReset
+    QueryBoard
+    ChannelConfig
+    RawFrame
+  }
+
+  enum OpenBciFrameFormatV1 {
+    V3Ascii      // Classic text frames
+    V3Binary     // Binary packet format
+  }
+
+  record CommandPolicyV1 {
+    kind OpenBciMessageKindV1
+    roh_weight float
+    allowed bool
+    description string
+  }
+
+  record FramePolicyV1 {
+    format OpenBciFrameFormatV1
+    max_channels u32
+    max_sample_rate_hz u32
+    neurorights_tag NeurorightsTagV1
+    roh_weight float
+  }
+
+  record BciStreamProfileOpenBciCytonV1 {
+    device_class_id string                    // "openbci-cyton-nus"
+    passthrough_service_uuid string           // NUS RX notify UUID
+
+    commands [CommandPolicyV1]
+    frames [FramePolicyV1]
+
+    invariant roh_weight_bounds {
+      forall cmd in commands {
+        cmd.roh_weight >= 0.0
+        cmd.roh_weight <= 0.15
+      }
+
+      forall frame in frames {
+        frame.roh_weight >= 0.0
+        frame.roh_weight <= 0.15
+      }
+    }
+  }
+
+  profile BciStreamProfileOpenBciCytonV1_Default {
+    device_class_id "openbci-cyton-nus"
+    passthrough_service_uuid "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+
+    commands [
+      CommandPolicyV1 {
+        kind StartStream
+        roh_weight 0.03
+        allowed true
+        description "Start acquisition with preconfigured channels."
+      }
+
+      CommandPolicyV1 {
+        kind StopStream
+        roh_weight 0.01
+        allowed true
+        description "Stop acquisition."
+      }
+
+      CommandPolicyV1 {
+        kind SoftReset
+        roh_weight 0.01
+        allowed true
+        description "Soft reset of board state."
+      }
+
+      CommandPolicyV1 {
+        kind QueryBoard
+        roh_weight 0.01
+        allowed true
+        description "Read board info and status."
+      }
+
+      CommandPolicyV1 {
+        kind ChannelConfig
+        roh_weight 0.05
+        allowed true
+        description "Configure channel gains/filters; bounded RoH due to higher risk."
+      }
+
+      CommandPolicyV1 {
+        kind RawFrame
+        roh_weight 0.04
+        allowed true
+        description "Implicit permission to receive raw frames."
+      }
+    ]
+
+    frames [
+      FramePolicyV1 {
+        format V3Ascii
+        max_channels 8
+        max_sample_rate_hz 250
+        neurorights_tag BciIntent
+        roh_weight 0.04
+      }
+
+      FramePolicyV1 {
+        format V3Binary
+        max_channels 8
+        max_sample_rate_hz 250
+        neurorights_tag BciIntent
+        roh_weight 0.04
+      }
+    ]
+  }
+}
