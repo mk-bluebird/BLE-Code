@@ -8,4 +8,8 @@ description = "ALN-backed BLE policy objects and invariants for neurorights and 
 
 [dependencies]
 serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
+
+# ALN loader – this should be your existing ALN → serde bridge crate name.
+aln-core = { version = "0.1.0", path = "../../crates/aln-core" }
