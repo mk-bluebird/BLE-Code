@@ -1,0 +1,33 @@
+{
+  "$schema": "https://aln.local/schemas/ble-session.v1.schema.json",
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "subject_id": "perplexity-ble-guard-v1",
+  "class_id": "openbci-cyton-nus",
+  "device_id": "CYTON-DEMO-01",
+  "started_at_utc": "2026-05-21T17:00:00Z",
+  "ended_at_utc": "2026-05-21T17:05:00Z",
+  "link": {
+    "phy": "LE1M",
+    "encrypted": true,
+    "mic_present": true,
+    "bonded": true,
+    "conn_interval_ms": 30,
+    "max_pdu_bytes": 64,
+    "cte_present": false
+  },
+  "roh": {
+    "roh_ceiling": 0.15,
+    "roh_used_ble": 0.12,
+    "roh_used_other": 0.00,
+    "roh_remaining": 0.03
+  },
+  "energy": {
+    "joules": 45.0,
+    "carbon_kg": 0.0009
+  },
+  "kerew": {
+    "knowledge_factor": 0.92,
+    "eco_wealth": 0.87
+  },
+  "notes": "Perplexity AI agent assisted with low-energy BCI BLE session under strict RoH constraints."
+}
