@@ -25,3 +25,48 @@ serde_json = "1.0"
 thiserror = "2.0"
 anyhow = "1.0"
 uuid = { version = "1.8", features = ["serde", "v4"] }
+
+# Lints shared across all crates (AI‑safe profile)
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+# AI failure modes – deny
+clone_on_ref_ptr = "deny"
+redundant_clone = "deny"
+unnecessary_to_owned = "deny"
+borrowed_box = "deny"
+inefficient_to_string = "deny"
+from_iter_instead_of_collect = "deny"
+needless_lifetimes = "deny"
+extra_unused_type_parameters = "deny"
+type_complexity = "deny"
+result_unit_err = "deny"
+unit_arg = "deny"
+needless_pass_by_value = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+todo = "deny"
+panic = "deny"
+dbg_macro = "deny"
+unimplemented = "deny"
+match_like_matches_macro = "deny"
+match_bool = "deny"
+match_single_binding = "deny"
+if_same_then_else = "deny"
+bool_comparison = "deny"
+into_iter_on_ref = "deny"
+map_clone = "deny"
+flat_map_identity = "deny"
+manual_flatten = "deny"
+single_collect = "deny"
+needless_collect = "deny"
+inefficient_open_options = "deny"
+incorrect_partial_ord_impl_on_ord_type = "deny"
+cmp_owned = "deny"
+naive_bytecount = "deny"
+
+# Warn on pedantic/nursery but don't block CI
+pedantic = "warn"
+nursery = "warn"
