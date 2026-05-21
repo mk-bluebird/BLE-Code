@@ -1,3 +1,5 @@
+// File: crates/ble-tools-ci-lint-github/src/main.rs
+
 #![forbid(unsafe_code)]
 
 use anyhow::{Context, Result, anyhow};
@@ -28,9 +30,7 @@ fn run_lint() -> Result<()> {
     }
 
     if workflow_files.is_empty() {
-        return Err(anyhow!(
-            "no GitHub workflows found under .github/workflows"
-        ));
+        return Err(anyhow!("no GitHub workflows found under .github/workflows"));
     }
 
     for path in &workflow_files {
