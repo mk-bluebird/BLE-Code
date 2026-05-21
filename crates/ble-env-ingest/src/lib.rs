@@ -4,6 +4,10 @@ use ble_model::{BleDeviceObservation, BleEnvironmentSample, BlePhy};
 use serde::Deserialize;
 use uuid::Uuid;
 
+pub mod aln_append;
+
+pub use aln_append::append_to_aln;
+
 /// Shape of Termux/CLI JSON scan results.
 /// This should match the actual JSON from your Termux wrapper.
 #[derive(Debug, Deserialize)]
