@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aln.local/schemas/bci-telemetry.v1.schema.json",
+  "title": "BciTelemetryV1",
+  "type": "object",
+  "required": [
+    "telemetry_id",
+    "session_id",
+    "subject_id",
+    "timestamp_utc",
+    "channel_count",
+    "sample_rate_hz",
+    "neurorights_tag",
+    "roh_weight",
+    "payload"
+  ],
+  "properties": {
+    "telemetry_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this telemetry record."
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "BLE session id, foreign key to BleSessionV1."
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "Subject identifier."
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this frame was captured at the source."
+    },
+    "channel_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sample_rate_hz": {
+      "type": "number",
+      "minimum": 1.0
+    },
+    "neurorights_tag": {
+      "type": "string",
+      "enum": ["BasicTelemetry", "BciIntent", "BiometricId", "Unknown"],
+      "description": "Neurorights classification of this stream/frame."
+    },
+    "roh_weight": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 0.3,
+      "description": "Contribution of this stream to RoH; must align with service roh_weight."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Opaque transport payload decoded into domain-level fields.",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["OpenBCI_V3", "OpenBCI_V5", "Custom"]
+        },
+        "raw_frame": {
+          "type": "string",
+          "description": "Hex or base64 encoding of raw frame data."
+        },
+        "channels_uv": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Per-channel microvolt samples when decoded."
+        }
+      },
+      "required": ["format"],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
