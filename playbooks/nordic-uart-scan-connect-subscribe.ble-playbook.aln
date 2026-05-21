@@ -1,0 +1,109 @@
+playbook NordicUartScanConnectSubscribeV1 {
+  version "1.0.0"
+
+  metadata {
+    description "Secure scan-connect-subscribe sequence for Nordic UART Service (NUS)."
+    profile_ref "schemas/ble-profile.schema.v1.aln"
+  }
+
+  requires {
+    class_id "nordic-uart-nus"
+    service_uuid "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+    characteristic_uuid "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // NUS RX notify
+
+    security {
+      require_encrypted true
+      require_bonded true
+      require_mic true
+      min_phy "LE1M"
+      max_phy "LE2M"
+    }
+  }
+
+  steps [
+    step 1 {
+      name "scan_for_nus_device"
+      intent {
+        kind "scan"
+        class_id "nordic-uart-nus"
+      }
+      guard {
+        // For scan, guard_scan() is called; must return Allowed.
+        require_decision "Allowed"
+      }
+      notes "Scan with filter for advertised NUS service UUID."
+    }
+
+    step 2 {
+      name "guard_connect"
+      intent {
+        kind "connect"
+        class_id "nordic-uart-nus"
+        device_id "${selected_device_id}"
+      }
+      link_params {
+        phy "LE1M"
+        encrypted false
+        mic_present false
+        bonded false
+        conn_interval_ms 50
+        max_pdu_bytes 23
+        cte_present false
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Pre-check connection under conservative default link parameters."
+    }
+
+    step 3 {
+      name "connect_via_platform_ble"
+      actuation_hint "Only execute if Step 2 guard_decision == Allowed."
+      notes "Call platform BLE connect with requested security (encryption/bonding/MIC)."
+    }
+
+    step 4 {
+      name "guard_connect_after_negotiation"
+      intent {
+        kind "connect"
+        class_id "nordic-uart-nus"
+        device_id "${selected_device_id}"
+      }
+      link_params {
+        // Fill from negotiated link properties.
+        phy "${negotiated_phy}"
+        encrypted "${negotiated_encrypted}"
+        mic_present "${negotiated_mic_present}"
+        bonded "${negotiated_bonded}"
+        conn_interval_ms "${negotiated_conn_interval_ms}"
+        max_pdu_bytes "${negotiated_max_pdu_bytes}"
+        cte_present "${negotiated_cte_present}"
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Re-check negotiated link parameters against DeviceClassPolicy."
+    }
+
+    step 5 {
+      name "guard_subscribe_nus_rx"
+      intent {
+        kind "subscribe_characteristic"
+        class_id "nordic-uart-nus"
+        device_id "${selected_device_id}"
+        service_uuid "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+        characteristic_uuid "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+      }
+      guard {
+        require_decision "Allowed"
+      }
+      notes "Guard must confirm ServicePolicy.allow_notify and RoH budget before subscribe."
+    }
+
+    step 6 {
+      name "subscribe_via_platform_ble"
+      actuation_hint "Only execute if Step 5 guard_decision == Allowed."
+      notes "Call platform BLE API to enable notifications on NUS RX characteristic."
+    }
+  ]
+}
