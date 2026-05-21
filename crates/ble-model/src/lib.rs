@@ -1,6 +1,10 @@
 // File: crates/ble-model/src/lib.rs
 
 #![forbid(unsafe_code)]
+// Temporary allows until documentation is added
+#![allow(missing_docs)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::struct_excessive_bools)]
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -45,7 +49,7 @@ pub enum BlePhy {
     LeCodedS8,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BleLinkParams {
     pub phy: BlePhy,
     pub encrypted: bool,
@@ -58,7 +62,7 @@ pub struct BleLinkParams {
 
 // ── Observations ───────────────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BleDeviceObservation {
     pub device_id: String,
     pub name: Option<String>,
@@ -67,7 +71,7 @@ pub struct BleDeviceObservation {
     pub phy: Option<BlePhy>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum BleObservation {
     Device {
@@ -108,8 +112,8 @@ impl BleLinkParams {
 impl BleIntent {
     pub fn validate_invariants(&self) -> Result<(), String> {
         match self {
-            BleIntent::Scan { .. } => Ok(()),
-            BleIntent::Connect {
+            Self::Scan { .. } => Ok(()),
+            Self::Connect {
                 class_id,
                 device_id,
             } => {
@@ -121,13 +125,13 @@ impl BleIntent {
                 }
                 Ok(())
             }
-            BleIntent::SubscribeCharacteristic {
+            Self::SubscribeCharacteristic {
                 class_id,
                 device_id,
                 service_uuid,
                 characteristic_uuid,
             }
-            | BleIntent::WriteCharacteristic {
+            | Self::WriteCharacteristic {
                 class_id,
                 device_id,
                 service_uuid,
