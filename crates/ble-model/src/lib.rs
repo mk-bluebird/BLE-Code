@@ -106,3 +106,65 @@ pub enum BleObservation {
         sample_id: Uuid,
     },
 }
+
+impl BleLinkParams {
+    /// Minimal non-policy invariants:
+    /// - conn_interval_ms > 0
+    /// - max_pdu_bytes > 0
+    pub fn validate_invariants(&self) -> Result<(), String> {
+        if self.conn_interval_ms == 0 {
+            return Err("conn_interval_ms must be > 0".into());
+        }
+        if self.max_pdu_bytes == 0 {
+            return Err("max_pdu_bytes must be > 0".into());
+        }
+        Ok(())
+    }
+}
+
+impl BleIntent {
+    /// Cheap sanity checks that do NOT encode neurorights or RoH policy.
+    /// They only ensure identifiers are non-empty and UUIDs are parsable.
+    pub fn validate_invariants(&self) -> Result<(), String> {
+        match self {
+            BleIntent::Scan { .. } => Ok(()),
+            BleIntent::Connect { class_id, device_id } => {
+                if class_id.is_empty() {
+                    return Err("class_id must not be empty".into());
+                }
+                if device_id.is_empty() {
+                    return Err("device_id must not be empty".into());
+                }
+                Ok(())
+            }
+            BleIntent::SubscribeCharacteristic {
+                class_id,
+                device_id,
+                service_uuid,
+                characteristic_uuid,
+            }
+            | BleIntent::WriteCharacteristic {
+                class_id,
+                device_id,
+                service_uuid,
+                characteristic_uuid,
+                ..
+            } => {
+                if class_id.is_empty() {
+                    return Err("class_id must not be empty".into());
+                }
+                if device_id.is_empty() {
+                    return Err("device_id must not be empty".into());
+                }
+                // UUID parsing is a structural check only.
+                let _ = uuid::Uuid::parse_str(service_uuid).map_err(|e| {
+                    format!("service_uuid must be a valid UUID: {e}")
+                })?;
+                let _ = uuid::Uuid::parse_str(characteristic_uuid).map_err(|e| {
+                    format!("characteristic_uuid must be a valid UUID: {e}")
+                })?;
+                Ok(())
+            }
+        }
+    }
+}
