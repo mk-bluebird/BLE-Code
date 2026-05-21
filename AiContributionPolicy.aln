@@ -1,5 +1,5 @@
 policy AiContributionPolicyV1 {
-  version "1.0.0"
+  version "1.1.0"
 
   metadata {
     description "Rules for AI-authored changes in BLE-Code."
@@ -34,3 +34,91 @@ policy AiContributionPolicyV1 {
     "No removal or downgrade of governance tools."
   ]
 }
+
+aln schema AiContributionPolicyV1
+version 1.1.0
+
+enum AiChangeScopeV1
+  Schema
+  Playbook
+  Governance
+  Profile
+  Config
+  Code
+  Docs
+
+record AiGuardRailRuleV1
+  id                      string
+  description             string
+  scope                   AiChangeScopeV1
+  path_glob               string
+  require_explicit_override bool
+  require_human_review      bool
+
+record CiGateRuleV1
+  id            string
+  description   string
+  script        string
+  paths_glob    string
+  required      bool
+
+record AiContributionPolicyV1
+  repository       string
+  max_diff_lines   u32
+  ai_authorship_marker string
+  guard_rails      AiGuardRailRuleV1
+  ci_gates         CiGateRuleV1
+
+policy AiContributionPolicyV1
+  repository         "BLE-Code"
+  max_diff_lines     800
+  ai_authorship_marker "ai-authored"
+
+  guard_rails
+    AiGuardRailRuleV1
+      id                        "no_ai_edit_repo_governance"
+      description               "AI must not edit repo-governance or AI contribution policy files directly."
+      scope                     Governance
+      path_glob                 "repo-governance.aln,AiContributionPolicy.aln"
+      require_explicit_override true
+      require_human_review      true
+
+    AiGuardRailRuleV1
+      id                        "no_ai_edit_core_profile_schema"
+      description               "AI must not edit core BLE profile schema directly."
+      scope                     Schema
+      path_glob                 "schemas/ble-profile.schema.v1.aln"
+      require_explicit_override true
+      require_human_review      true
+
+    AiGuardRailRuleV1
+      id                        "require_review_for_core_workflows_and_guard"
+      description               "AI changes to core workflows and guard/governance crates must be human-reviewed."
+      scope                     Code
+      path_glob                 ".github/workflows/**,crates/ble-guard/**,crates/ble-governance/**"
+      require_explicit_override false
+      require_human_review      true
+
+    AiGuardRailRuleV1
+      id                        "no_ai_edit_perplexity_profile"
+      description               "AI must not alter Perplexity BLE profile unless explicitly flagged and reviewed."
+      scope                     Profile
+      path_glob                 "schemas/perplexity-ble-guard-v1.profile.aln"
+      require_explicit_override true
+      require_human_review      true
+
+    AiGuardRailRuleV1
+      id                        "no_ai_edit_perplexity_config"
+      description               "AI must not alter Perplexity BLE guard config unless explicitly flagged and reviewed."
+      scope                     Config
+      path_glob                 "configs/perplexity-ble-guard-config.json"
+      require_explicit_override true
+      require_human_review      true
+
+  ci_gates
+    CiGateRuleV1
+      id          "require_link_playbooks"
+      description "All schemas and playbooks must pass link_playbooks.sh before merge."
+      script      "tools/link_playbooks.sh"
+      paths_glob  "schemas/**,playbooks/**"
+      required    true
