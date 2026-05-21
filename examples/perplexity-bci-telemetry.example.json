@@ -1,0 +1,25 @@
+{
+  "$schema": "https://aln.local/schemas/bci-telemetry.v1.schema.json",
+  "telemetry_id": "00000000-0000-4000-8000-0000000000b1",
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "subject_id": "perplexity-ble-guard-v1",
+  "timestamp_utc": "2026-05-21T17:00:10Z",
+  "channel_count": 8,
+  "sample_rate_hz": 250.0,
+  "neurorights_tag": "BciIntent",
+  "roh_weight": 0.02,
+  "payload": {
+    "format": "OpenBCI_V3",
+    "raw_frame": "QkMJAD8AAAABAQEBAQEBAQE=",
+    "channels_uv": [
+      12.3,
+      11.8,
+      9.7,
+      10.2,
+      8.5,
+      7.9,
+      11.1,
+      10.8
+    ]
+  }
+}
