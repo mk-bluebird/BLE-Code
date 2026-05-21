@@ -1,0 +1,53 @@
+# tools/code_patterns.toml
+
+# Relative paths to scan (directory roots).
+roots = [
+  "crates",
+  "examples",
+  "src",
+]
+
+# File globs to ignore (substring match, cheap).
+ignore_paths = [
+  "target/",
+  "tests/snapshots/",
+  "generated/",
+]
+
+# Patterns to match in Rust source files.
+# The message appears in the JSON report.
+[[patterns]]
+name = "unwrap"
+needle = ".unwrap("
+severity = "error"
+message = "Use of unwrap() is forbidden; prefer explicit error handling."
+
+[[patterns]]
+name = "todo"
+needle = "todo!"
+severity = "error"
+message = "todo!() must not reach main branches."
+
+[[patterns]]
+name = "unimplemented"
+needle = "unimplemented!"
+severity = "error"
+message = "unimplemented!() must not reach main branches."
+
+[[patterns]]
+name = "panic"
+needle = "panic!"
+severity = "error"
+message = "panic!() is not allowed in production code."
+
+[[patterns]]
+name = "unsafe-block"
+needle = "unsafe {"
+severity = "error"
+message = "unsafe blocks are forbidden; introduce a safe wrapper crate instead."
+
+[[patterns]]
+name = "unsafe-keyword"
+needle = "unsafe "
+severity = "warn"
+message = "unsafe usage detected; ensure this is in allowed low-level modules only."
