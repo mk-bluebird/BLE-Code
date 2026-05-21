@@ -73,11 +73,7 @@ impl BleGuard {
     }
 
     /// Evaluate a connect request.
-    pub fn guard_connect(
-        &mut self,
-        intent: &BleIntent,
-        link: &BleLinkParams,
-    ) -> BleGuardDecision {
+    pub fn guard_connect(&mut self, intent: &BleIntent, link: &BleLinkParams) -> BleGuardDecision {
         // Structural: only Connect intents are accepted here.
         let (class_id, device_id) = match intent {
             BleIntent::Connect { class_id, device_id } => (class_id, device_id),
@@ -185,12 +181,7 @@ impl BleGuard {
             return BleGuardDecision::Rejected { reason };
         }
 
-        // Track subscription.
-        if !conn
-            .subscribed_services
-            .iter()
-            .any(|u| u == service_uuid)
-        {
+        if !conn.subscribed_services.iter().any(|u| u == service_uuid) {
             conn.subscribed_services.push(service_uuid.clone());
         }
 
@@ -198,11 +189,7 @@ impl BleGuard {
     }
 
     /// Evaluate a characteristic write.
-    pub fn guard_write(
-        &mut self,
-        intent: &BleIntent,
-        link: &BleLinkParams,
-    ) -> BleGuardDecision {
+    pub fn guard_write(&mut self, intent: &BleIntent, link: &BleLinkParams) -> BleGuardDecision {
         let (class_id, device_id, service_uuid) = match intent {
             BleIntent::WriteCharacteristic {
                 class_id,

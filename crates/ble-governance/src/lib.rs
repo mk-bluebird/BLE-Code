@@ -114,9 +114,7 @@ pub enum GovernanceInvariantError {
         service_uuid: String,
         roh_weight: f32,
     },
-    #[error(
-        "sum of roh_weight for BCI services ({sum}) exceeds roh_ceiling ({ceiling})"
-    )]
+    #[error("sum of roh_weight for BCI services ({sum}) exceeds roh_ceiling ({ceiling})")]
     RohCeilingExceeded { sum: f32, ceiling: f32 },
 }
 
