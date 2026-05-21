@@ -1,5 +1,3 @@
-// File: crates/ble-model/src/lib.rs
-
 #![forbid(unsafe_code)]
 //! BLE intent and observation models for neurorights-aware BLE workflows.
 //!
@@ -8,6 +6,7 @@
 #![allow(missing_docs)]
 #![allow(clippy::struct_excessive_bools)]
 #![allow(clippy::doc_markdown)]
+#![allow(clippy::missing_errors_doc)]
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
