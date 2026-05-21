@@ -1,0 +1,36 @@
+policy AiContributionPolicyV1 {
+  version "1.0.0"
+
+  metadata {
+    description "Rules for AI-authored changes in BLE-Code."
+  }
+
+  ai_authorship_marker "ai-authored"
+
+  rust_requirements {
+    require_clippy_profile "ci-strict"
+    require_tests_for_new_crates true
+    forbid_direct_os_ble_calls true
+  }
+
+  file_guards {
+    prohibited_for_ai [
+      "repo-governance.aln",
+      "AiContributionPolicy.aln",
+      "schemas/ble-profile.schema.v1.aln"
+    ]
+
+    require_human_review [
+      ".github/workflows/**",
+      "crates/ble-guard/**",
+      "crates/ble-governance/**"
+    ]
+  }
+
+  check_list [
+    "CI must pass on all required jobs.",
+    "No new unsafe blocks in core crates.",
+    "No widening of RoH ceilings beyond 0.3.",
+    "No removal or downgrade of governance tools."
+  ]
+}
