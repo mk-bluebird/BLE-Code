@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
-use ble_guard::{BleGuard, BleGuardDecision};
 use ble_governance::BleProfileShard;
+use ble_guard::{BleGuard, BleGuardDecision};
 use ble_model::{BleIntent, BleLinkParams};
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
@@ -11,13 +11,16 @@ use std::sync::Mutex;
 
 /// Global guard instance for the process.
 /// In a real app you may want per-subject or per-profile guards.
-static GUARD: OnceCell<Mutex<BleGuard>> = OnceCell::new;
+static GUARD: OnceCell<Mutex<BleGuard>> = OnceCell::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum FfiIntent {
     Scan,
-    Connect { class_id: String, device_id: String },
+    Connect {
+        class_id: String,
+        device_id: String,
+    },
     SubscribeCharacteristic {
         class_id: String,
         device_id: String,
@@ -84,7 +87,9 @@ pub extern "C" fn init_ble_guard_from_profile_json(json: *const c_char) -> bool 
 #[no_mangle]
 pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c_char {
     let result = (|| -> Result<BleGuardResponse, String> {
-        let guard_cell = GUARD.get().ok_or_else(|| "Guard not initialized".to_string())?;
+        let guard_cell = GUARD
+            .get()
+            .ok_or_else(|| "Guard not initialized".to_string())?;
         let cstr = unsafe { CStr::from_ptr(request_json) };
         let s = cstr
             .to_str()
@@ -93,7 +98,9 @@ pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c
         let req: BleGuardRequest =
             serde_json::from_str(s).map_err(|e| format!("Request JSON parse error: {e}"))?;
 
-        let mut guard = guard_cell.lock().map_err(|_| "Guard mutex poisoned".to_string())?;
+        let mut guard = guard_cell
+            .lock()
+            .map_err(|_| "Guard mutex poisoned".to_string())?;
 
         let (intent, link) = convert_request(req)?;
         let decision = match (&intent, link.as_ref()) {
@@ -119,7 +126,9 @@ pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c
     })();
 
     let json = match result {
-        Ok(resp) => serde_json::to_string(&resp).unwrap_or_else(|_| "{\"decision\":\"rejected\",\"reason\":\"serialization error\"}".into()),
+        Ok(resp) => serde_json::to_string(&resp).unwrap_or_else(|_| {
+            "{\"decision\":\"rejected\",\"reason\":\"serialization error\"}".into()
+        }),
         Err(e) => serde_json::to_string(&BleGuardResponse {
             decision: "rejected".into(),
             reason: Some(e),
@@ -134,7 +143,13 @@ pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c
 fn convert_request(req: BleGuardRequest) -> Result<(BleIntent, Option<BleLinkParams>), String> {
     let intent = match req.intent {
         FfiIntent::Scan => BleIntent::Scan { class_id: None },
-        FfiIntent::Connect { class_id, device_id } => BleIntent::Connect { class_id, device_id },
+        FfiIntent::Connect {
+            class_id,
+            device_id,
+        } => BleIntent::Connect {
+            class_id,
+            device_id,
+        },
         FfiIntent::SubscribeCharacteristic {
             class_id,
             device_id,
