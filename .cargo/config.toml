@@ -5,26 +5,6 @@ retry = 2
 git-fetch-with-cli = true
 offline = false
 
-[registries]
-# Default crates.io registry
-crates-io = { index = "https://github.com/rust-lang/crates.io-index" }
-
-# Optional internal registry example (replace URL when used)
-# my-org = { index = "https://my-registry.example.com/index" }
-
-[registry]
-# This only affects `cargo publish` default target registry.
-default = "crates-io"
-
-# Source replacement: currently a no-op, but structured correctly.
-# If you later add a mirror, point `replace-with` to that mirror source.
-[source.crates-io]
-replace-with = "crates-io"
-
-# Example of pinning a local mirror (uncomment when you have one)
-# [source.my-mirror]
-# registry = "https://my-mirror.example.com/index"
-
 [build]
 # Ensure consistent target and host triples
 target-dir = "target"
