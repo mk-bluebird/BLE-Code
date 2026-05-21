@@ -13,3 +13,6 @@ anyhow = { workspace = true }
 
 ble-model = { path = "../ble-model" }
 ble-governance = { path = "../ble-governance" }
+
+[lints]
+workspace = true
