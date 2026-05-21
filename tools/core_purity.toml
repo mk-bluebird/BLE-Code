@@ -1,4 +1,10 @@
 # tools/core_purity.toml
+#
+# Core purity config for ble-tools-core-purity.
+# This file mirrors the semantics of tools/check_core_purity.sh:
+#   - Same core crate list.
+#   - Same forbidden dependency names: btleplug, android, jni, tokio.
+# Source-level checks are currently disabled; you can tighten them later.
 
 core_crates = [
   "crates/ble-model",
@@ -8,23 +14,12 @@ core_crates = [
 ]
 
 forbidden_deps = [
-  # examples; replace with your real list once you mirror tools/check_core_purity.sh
+  "btleplug",
+  "android",
+  "jni",
   "tokio",
-  "reqwest",
-  "hyper",
-  "openssl",
 ]
 
-platform_patterns = [
-  "cfg(target_os",
-  "std::os::unix",
-  "std::os::windows",
-  "std::os::linux",
-]
-
-forbidden_actuation_patterns = [
-  # examples; replace with your actual actuation APIs
-  "ble_hw::actuate",
-  "ble_driver::set_",
-  "ble_driver::write_register",
-]
+# Source-level checks are off for now, to exactly mirror the bash script.
+platform_patterns = []
+forbidden_actuation_patterns = []
