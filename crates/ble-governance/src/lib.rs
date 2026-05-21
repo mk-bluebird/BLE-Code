@@ -164,3 +164,46 @@ impl BleProfileShard {
         Ok(())
     }
 }
+
+impl BleProfileShard {
+    pub fn validate_invariants(&self) -> Result<(), GovernanceInvariantError> {
+        let subj = &self.subject;
+
+        // 1. subject_id must be non-empty
+        if subj.subject_id.trim().is_empty() {
+            return Err(GovernanceInvariantError::EmptySubjectId);
+        }
+
+        // 2. roh_ceiling must be between 0.0 and 0.3 (inclusive)
+        if !(0.0..=0.3).contains(&subj.roh_ceiling) {
+            return Err(GovernanceInvariantError::InvalidRohCeiling(
+                subj.roh_ceiling,
+            ));
+        }
+
+        // 3. No negative roh_weight and 4. Sum of BCI weights <= roh_ceiling
+        let mut sum_bci = 0.0_f32;
+
+        for svc in &self.service_policies {
+            if svc.roh_weight < 0.0 {
+                return Err(GovernanceInvariantError::NegativeRohWeight {
+                    service_uuid: svc.service_uuid.clone(),
+                    roh_weight: svc.roh_weight,
+                });
+            }
+
+            if matches!(svc.neurorights_tag, NeurorightsTag::BciIntent) {
+                sum_bci += svc.roh_weight;
+            }
+        }
+
+        if sum_bci > subj.roh_ceiling + f32::EPSILON {
+            return Err(GovernanceInvariantError::RohCeilingExceeded {
+                sum: sum_bci,
+                ceiling: subj.roh_ceiling,
+            });
+        }
+
+        Ok(())
+    }
+}
