@@ -3,7 +3,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-pub mod aln_loader;
+// Commented out until aln-core dependency is available
+// pub mod aln_loader;
 
 /// Neurorights semantics of a service.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -121,51 +122,13 @@ pub enum GovernanceInvariantError {
 impl BleProfileShard {
     /// Validate RoH and basic structural invariants.
     ///
-    /// Guarantees:
-    /// - subject.subject_id is non-empty.
-    /// - 0.0 <= roh_ceiling <= 0.3
-    /// - no service has negative roh_weight
-    /// - sum of roh_weight for NeurorightsTag::BciIntent services <= roh_ceiling
-    pub fn validate_invariants(&self) -> Result<(), GovernanceInvariantError> {
-        let subj = &self.subject;
-
-        if subj.subject_id.trim().is_empty() {
-            return Err(GovernanceInvariantError::EmptySubjectId);
-        }
-
-        if !(0.0..=0.3).contains(&subj.roh_ceiling) {
-            return Err(GovernanceInvariantError::InvalidRohCeiling(
-                subj.roh_ceiling,
-            ));
-        }
-
-        let mut sum_bci = 0.0_f32;
-
-        for svc in &self.service_policies {
-            if svc.roh_weight < 0.0 {
-                return Err(GovernanceInvariantError::NegativeRohWeight {
-                    service_uuid: svc.service_uuid.clone(),
-                    roh_weight: svc.roh_weight,
-                });
-            }
-
-            if matches!(svc.neurorights_tag, NeurorightsTag::BciIntent) {
-                sum_bci += svc.roh_weight;
-            }
-        }
-
-        if sum_bci > subj.roh_ceiling + f32::EPSILON {
-            return Err(GovernanceInvariantError::RohCeilingExceeded {
-                sum: sum_bci,
-                ceiling: subj.roh_ceiling,
-            });
-        }
-
-        Ok(())
-    }
-}
-
-impl BleProfileShard {
+    /// # Errors
+    ///
+    /// Returns `GovernanceInvariantError` if:
+    /// - `subject.subject_id` is empty
+    /// - `roh_ceiling` is not in range `[0.0, 0.3]`
+    /// - Any service has negative `roh_weight`
+    /// - Sum of `roh_weight` for `BciIntent` services exceeds `roh_ceiling`
     pub fn validate_invariants(&self) -> Result<(), GovernanceInvariantError> {
         let subj = &self.subject;
 
