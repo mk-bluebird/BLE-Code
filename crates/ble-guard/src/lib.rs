@@ -76,11 +76,14 @@ impl BleGuard {
     pub fn guard_connect(&mut self, intent: &BleIntent, link: &BleLinkParams) -> BleGuardDecision {
         // Structural: only Connect intents are accepted here.
         let (class_id, device_id) = match intent {
-            BleIntent::Connect { class_id, device_id } => (class_id, device_id),
+            BleIntent::Connect {
+                class_id,
+                device_id,
+            } => (class_id, device_id),
             _ => {
                 return BleGuardDecision::Rejected {
                     reason: "guard_connect called with non-Connect intent".into(),
-                }
+                };
             }
         };
 
@@ -109,7 +112,7 @@ impl BleGuard {
             None => {
                 return BleGuardDecision::Rejected {
                     reason: format!("No DeviceClassPolicy for class_id={class_id}"),
-                }
+                };
             }
         };
 
@@ -141,9 +144,8 @@ impl BleGuard {
             } => (class_id, device_id, service_uuid),
             _ => {
                 return BleGuardDecision::Rejected {
-                    reason: "guard_subscribe called with non-SubscribeCharacteristic intent"
-                        .into(),
-                }
+                    reason: "guard_subscribe called with non-SubscribeCharacteristic intent".into(),
+                };
             }
         };
 
@@ -154,7 +156,7 @@ impl BleGuard {
             None => {
                 return BleGuardDecision::Rejected {
                     reason: "No active connection for subscribe".into(),
-                }
+                };
             }
         };
 
@@ -166,7 +168,7 @@ impl BleGuard {
                     reason: format!(
                         "No ServicePolicy for class_id={class_id}, service_uuid={service_uuid}"
                     ),
-                }
+                };
             }
         };
 
@@ -200,7 +202,7 @@ impl BleGuard {
             _ => {
                 return BleGuardDecision::Rejected {
                     reason: "guard_write called with non-WriteCharacteristic intent".into(),
-                }
+                };
             }
         };
 
@@ -223,7 +225,7 @@ impl BleGuard {
             None => {
                 return BleGuardDecision::Rejected {
                     reason: format!("No DeviceClassPolicy for class_id={class_id}"),
-                }
+                };
             }
         };
         if let Err(reason) = check_link_against_class(class_policy, link) {
@@ -238,7 +240,7 @@ impl BleGuard {
                     reason: format!(
                         "No ServicePolicy for class_id={class_id}, service_uuid={service_uuid}"
                     ),
-                }
+                };
             }
         };
 
@@ -256,14 +258,11 @@ impl BleGuard {
         BleGuardDecision::Allowed
     }
 
-    fn find_service_policy(
-        &self,
-        class_id: &str,
-        service_uuid: &str,
-    ) -> Option<&ServicePolicy> {
-        self.profile.service_policies.iter().find(|p| {
-            p.class_id == class_id && p.service_uuid.eq_ignore_ascii_case(service_uuid)
-        })
+    fn find_service_policy(&self, class_id: &str, service_uuid: &str) -> Option<&ServicePolicy> {
+        self.profile
+            .service_policies
+            .iter()
+            .find(|p| p.class_id == class_id && p.service_uuid.eq_ignore_ascii_case(service_uuid))
     }
 
     /// Enforce `roh_ceiling` using accumulated_roh_ble + this service's weight.
