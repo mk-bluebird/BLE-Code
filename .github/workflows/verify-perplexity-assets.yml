@@ -1,0 +1,109 @@
+name: Verify Perplexity Assets
+
+on:
+  push:
+    paths:
+      - "repo_index.db"
+      - "config/perplexity-ble-guard-v1.profile.aln"
+      - "docs/perplexity-ble-guard-usage.md"
+      - "examples/perplexity-ble-guard-telemetry*.json"
+      - "tools/check_perplexity_profile.sh"
+  pull_request:
+    paths:
+      - "repo_index.db"
+      - "config/perplexity-ble-guard-v1.profile.aln"
+      - "docs/perplexity-ble-guard-usage.md"
+      - "examples/perplexity-ble-guard-telemetry*.json"
+      - "tools/check_perplexity_profile.sh"
+  workflow_dispatch: {}
+
+jobs:
+  verify-perplexity-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure sqlite3 available
+        run: sqlite3 -version
+
+      - name: Verify repo_index.db exists
+        run: |
+          if [ ! -f "repo_index.db" ]; then
+            echo "repo_index.db not found at repo root"
+            exit 1
+          fi
+
+      - name: Check Perplexity assets registered in catalog
+        run: |
+          set -euo pipefail
+          DB="repo_index.db"
+
+          echo "== Schemas for Perplexity BLE guard =="
+          sqlite3 "$DB" <<'SQL'
+          .mode table
+          SELECT id, name, path, kind
+          FROM schemas
+          WHERE name LIKE 'perplexity-ble-guard-v1.%'
+             OR path LIKE '%perplexity-ble-guard-v1.profile.aln%';
+          SQL
+
+          echo "== Documents for Perplexity BLE guard =="
+          sqlite3 "$DB" <<'SQL'
+          .mode table
+          SELECT id, name, path, category
+          FROM documents
+          WHERE path LIKE 'docs/perplexity-ble-guard-usage%.md';
+          SQL
+
+          echo "== Example telemetry registered =="
+          sqlite3 "$DB" <<'SQL'
+          .mode table
+          SELECT id, name, path, category
+          FROM documents
+          WHERE path LIKE 'examples/perplexity-ble-guard-telemetry%.json';
+          SQL
+
+          echo "== Verifying no missing schema references =="
+          sqlite3 "$DB" <<'SQL'
+          .mode table
+          SELECT r.from_schema_id, r.to_schema_id
+          FROM schema_references r
+          LEFT JOIN schemas s_from ON s_from.id = r.from_schema_id
+          LEFT JOIN schemas s_to   ON s_to.id   = r.to_schema_id
+          WHERE (s_from.id IS NULL OR s_to.id IS NULL)
+            AND r.from_schema_id IN (
+              SELECT id FROM schemas
+              WHERE name LIKE 'perplexity-ble-guard-v1.%'
+                 OR path LIKE '%perplexity-ble-guard-v1.profile.aln%'
+            );
+          SQL
+
+          MISSING_COUNT="$(sqlite3 "$DB" <<'SQL'
+          SELECT COUNT(*)
+          FROM schema_references r
+          LEFT JOIN schemas s_from ON s_from.id = r.from_schema_id
+          LEFT JOIN schemas s_to   ON s_to.id   = r.to_schema_id
+          WHERE (s_from.id IS NULL OR s_to.id IS NULL)
+            AND r.from_schema_id IN (
+              SELECT id FROM schemas
+              WHERE name LIKE 'perplexity-ble-guard-v1.%'
+                 OR path LIKE '%perplexity-ble-guard-v1.profile.aln%'
+            );
+          SQL
+          )"
+
+          if [ "$MISSING_COUNT" -ne 0 ]; then
+            echo "ERROR: Found $MISSING_COUNT missing schema references for Perplexity assets."
+            exit 1
+          fi
+
+      - name: Run Perplexity profile checker
+        run: |
+          set -euo pipefail
+          if [ ! -x "tools/check_perplexity_profile.sh" ]; then
+            echo "tools/check_perplexity_profile.sh not found or not executable"
+            exit 1
+          fi
+          bash tools/check_perplexity_profile.sh
