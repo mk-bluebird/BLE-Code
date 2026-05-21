@@ -1,3 +1,4 @@
+# File: .github/workflows/ci.yml
 name: CI
 
 on:
@@ -8,6 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE_24: "true"
+  CARGO_INCREMENTAL: "0"
 
 jobs:
   workspace-hygiene:
@@ -21,7 +23,13 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: "1.85.0"
+          components: rustfmt, clippy
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
 
       - name: Cargo metadata
         run: cargo metadata --all-features --format-version 1
@@ -38,7 +46,11 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: "1.85.0"
+          components: rustfmt
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Rustfmt check
         run: cargo fmt --all -- --check
@@ -55,8 +67,11 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: "1.85.0"
           components: clippy
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Clippy (deny warnings)
         run: cargo clippy --all-targets --all-features -- -D warnings
@@ -75,7 +90,10 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: "1.85.0"
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Run tests
         run: cargo test --workspace --all-features
@@ -92,7 +110,10 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: "1.85.0"
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Workspace lint
         run: cargo run -p ble-tools-workspace-lint -- --fail-on-error
