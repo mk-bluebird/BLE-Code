@@ -1,4 +1,5 @@
-# File: .cargo/config.toml
+# .cargo/config.toml
+# BLE-Code workspace config for Rust 1.85+ CI
 
 [net]
 retry = 2
@@ -6,10 +7,8 @@ git-fetch-with-cli = true
 offline = false
 
 [build]
-# Ensure consistent target and host triples
 target-dir = "target"
-jobs = 0                # Let CI pick CPU cores; can pin to reduce jitter
-incremental = false     # More reproducible builds, less disk use
+incremental = false
 rustflags = [
     "-Cdebuginfo=1",
     "-Coverflow-checks=on",
