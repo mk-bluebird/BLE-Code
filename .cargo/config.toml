@@ -19,7 +19,7 @@ default = "crates-io"
 # Source replacement: currently a no-op, but structured correctly.
 # If you later add a mirror, point `replace-with` to that mirror source.
 [source.crates-io]
-# replace-with = "crates-io"
+replace-with = "crates-io"
 
 # Example of pinning a local mirror (uncomment when you have one)
 # [source.my-mirror]
