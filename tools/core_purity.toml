@@ -1,0 +1,30 @@
+# tools/core_purity.toml
+
+core_crates = [
+  "crates/ble-model",
+  "crates/ble-governance",
+  "crates/ble-guard",
+  "crates/ble-env-ingest",
+]
+
+forbidden_deps = [
+  # examples; replace with your real list once you mirror tools/check_core_purity.sh
+  "tokio",
+  "reqwest",
+  "hyper",
+  "openssl",
+]
+
+platform_patterns = [
+  "cfg(target_os",
+  "std::os::unix",
+  "std::os::windows",
+  "std::os::linux",
+]
+
+forbidden_actuation_patterns = [
+  # examples; replace with your actual actuation APIs
+  "ble_hw::actuate",
+  "ble_driver::set_",
+  "ble_driver::write_register",
+]
