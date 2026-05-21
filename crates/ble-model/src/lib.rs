@@ -7,6 +7,7 @@
 //! and observations. All types are non-actuating and safe to serialize.
 #![allow(missing_docs)]
 #![allow(clippy::struct_excessive_bools)]
+#![allow(clippy::doc_markdown)]
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -97,7 +98,7 @@ pub struct BleDeviceObservation {
 }
 
 /// Top-level BLE observation event.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum BleObservation {
     /// Single device observation.
@@ -115,7 +116,7 @@ pub enum BleObservation {
 // ── Environment Snapshot ───────────────────────────────────────────────────────
 
 /// Aggregated BLE environment snapshot (multiple devices).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BleEnvironmentSample {
     /// Unique sample identifier.
     pub sample_id: Uuid,
@@ -126,16 +127,13 @@ pub struct BleEnvironmentSample {
     /// Maximum RSSI observed across all devices.
     pub max_rssi_dbm: i16,
     /// Average RSSI across all devices (if computed).
-    pub avg_rssi_dbm: Option<f32>,
+    pub avg_rssi_dbm: Option<i16>,
 }
 
 // ── Structural Invariants (no policy) ──────────────────────────────────────────
 
 impl BleLinkParams {
     /// Validates basic structural invariants (not policy).
-    ///
-    /// # Errors
-    /// Returns an error if connection interval or PDU size is zero.
     pub fn validate_invariants(&self) -> Result<(), String> {
         if self.conn_interval_ms == 0 {
             return Err("conn_interval_ms must be > 0".into());
@@ -149,9 +147,6 @@ impl BleLinkParams {
 
 impl BleEnvironmentSample {
     /// Validates basic structural invariants.
-    ///
-    /// # Errors
-    /// Returns an error if avg_rssi is present when device_count is zero.
     pub fn validate_invariants(&self) -> Result<(), String> {
         if self.device_count == 0 && self.avg_rssi_dbm.is_some() {
             return Err("avg_rssi_dbm must be None when device_count is 0".into());
@@ -162,9 +157,6 @@ impl BleEnvironmentSample {
 
 impl BleIntent {
     /// Validates basic structural invariants (not policy).
-    ///
-    /// # Errors
-    /// Returns an error if required fields are empty or UUIDs are malformed.
     pub fn validate_invariants(&self) -> Result<(), String> {
         match self {
             Self::Scan { .. } => Ok(()),
