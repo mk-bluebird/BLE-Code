@@ -9,8 +9,8 @@ use std::fs;
 fn perplexity_profile_loads_into_guard() {
     let path = "schemas/perplexity-ble-guard-v1.profile.json";
     // Either maintain a JSON-exported copy in the repo or generate it in CI.
-    let raw = fs::read_to_string(path)
-        .expect("perplexity profile JSON should exist for smoke test");
+     let raw =
+        fs::read_to_string(path).expect("perplexity profile JSON should exist for smoke test");
     let shard: BleProfileShard =
         serde_json::from_str(&raw).expect("perplexity profile JSON must parse");
     shard
