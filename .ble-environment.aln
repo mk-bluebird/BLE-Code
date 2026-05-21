@@ -1,0 +1,14 @@
+record BleEnvironmentSample
+  sample_id <uuid>
+  timestamp_utc "2026-05-21T16:29:10Z"
+  device_count 3
+  max_rssi_dbm -40
+  avg_rssi_dbm -65.3
+
+record BleDeviceObservation
+  sample_id <same uuid as above>
+  device_id "AA:BB:CC:DD:EE:FF"
+  name "Device"
+  rssi_dbm -60
+  service_uuids ["uuid1","uuid2"]
+  phy "LE1M"
