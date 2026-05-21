@@ -11,6 +11,10 @@ members = [
     "crates/ble-tools-workspace-lint",
     "crates/ble-tools-ci-lint-github",
     "crates/ble-tools-core-purity",
+
+    # Optional: glob pattern for additional crates and BLE tools
+    "rust/crates/*",
+    "ble-tools-*",
 ]
 
 [workspace.package]
@@ -27,13 +31,27 @@ thiserror = "2.0"
 anyhow = "1.0"
 uuid = { version = "1.8", features = ["serde", "v4"] }
 
-# Lints shared across all crates (AI‑safe profile)
 [workspace.lints.rust]
-unsafe_code = "forbid"
+unsafe_code = "deny"
 missing_docs = "warn"
+missing_debug_implementations = "warn"
+unused_extern_crates = "deny"
+unused_imports = "deny"
+unused_must_use = "deny"
+unused_variables = "warn"
+rust_2018_idioms = "warn"
+unexpected_cfgs = "deny"
 
 [workspace.lints.clippy]
-# AI failure modes – deny
+# Core AI-safety and correctness
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+
+# Foot-guns and complexity traps
 clone_on_ref_ptr = "deny"
 redundant_clone = "deny"
 unnecessary_to_owned = "deny"
@@ -46,12 +64,6 @@ type_complexity = "deny"
 result_unit_err = "deny"
 unit_arg = "deny"
 needless_pass_by_value = "deny"
-unwrap_used = "deny"
-expect_used = "deny"
-todo = "deny"
-panic = "deny"
-dbg_macro = "deny"
-unimplemented = "deny"
 match_like_matches_macro = "deny"
 match_bool = "deny"
 match_single_binding = "deny"
@@ -68,6 +80,12 @@ incorrect_partial_ord_impl_on_ord_type = "deny"
 cmp_owned = "deny"
 naive_bytecount = "deny"
 
-# Warn on pedantic/nursery but don't block CI
+# Broad lint groups enabled but not CI-breaking
+all = "warn"
+large_enum_variant = "warn"
+large_stack_arrays = "warn"
+map_err_ignore = "deny"
+
+# Pedantic and nursery warnings at lower priority
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
