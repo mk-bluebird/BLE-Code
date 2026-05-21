@@ -1,0 +1,37 @@
+# BLE-Code fmt plan (requires Rust 1.85.0 + cargo fmt)
+#
+# This container does NOT have cargo/rustc installed.
+# Do NOT install toolchains here; run this plan only
+# on a Rust-enabled CI runner or dev machine.
+
+[toolchain]
+rust-toolchain.toml: channel = "1.85.0", components = ["rustfmt", "clippy"]
+
+[workspace]
+Cargo.toml workspace.members:
+  - crates/ble-model
+  - crates/ble-governance
+  - crates/ble-guard
+  - crates/ble-env-ingest
+  - crates/ble-adapter-btleplug
+  - crates/ble-android-ffi
+  - crates/ble-tools-workspace-lint
+  - crates/ble-tools-ci-lint-github
+
+[files_with_known_fmt_diffs_from_CI]
+
+  crates/ble-android-ffi/src/lib.rs
+  crates/ble-env-ingest/src/aln_append.rs
+  crates/ble-guard/src/lib.rs
+  crates/ble-guard/tests/perplexity_profile_smoke.rs
+  crates/ble-model/src/lib.rs
+  crates/ble-tools-ci-lint-github/src/main.rs
+  crates/ble-tools-workspace-lint/src/main.rs
+
+[intended_command_on_Rust-enabled_runner]
+
+  # From workspace root:
+  cargo fmt --all
+
+[note]
+  This environment is verification-only. Do not attempt rustup or toolchain installation.
