@@ -1,43 +1,128 @@
-governance RepoGovernanceV1 {
-  version "1.0.0"
+aln schema RepoGovernanceV1
+version 1.1.0
 
-  ci_required_jobs [
-    "workspace-hygiene",
-    "fmt",
-    "clippy",
-    "test",
-    "governance-lint"
-  ]
+enum CiJobKindV1
+  tools-ci
+  catalog-ci
+  perplexity-ci
+  examples
+  rust-ci
+  android-ci
 
-  rust_policies {
-    msrv "1.75"
-    edition "2024"
-    deny_clippy_warnings true
-    forbid_unsafe_in_core true
-  }
+record CiJobRequirementV1
+  name          string
+  kind          CiJobKindV1
+  workflow_file string
+  paths_glob    string
+  required      bool
 
-  android_policies {
-    jdk_version "17"
-    require_gradle_cache true
-  }
+record CatalogPoliciesV1
+  require_catalog_up_to_date      bool
+  require_playbook_schema_resolve bool
+  require_aln_lint_pass           bool
 
-  workflow_policies {
-    require_node24_env true
-    approved_actions [
-      "actions/checkout@v4",
-      "dtolnay/rust-toolchain@v1",
-      "actions/setup-java@v4",
-      "gradle/actions/setup-gradle@v4",
-      "actions/upload-artifact@v4",
-      "Swatinem/rust-cache@v2"
-    ]
-  }
+record RustPoliciesV1
+  msrv                    string
+  edition                 string
+  deny_clippy_warnings    bool
+  forbid_unsafe_in_core   bool
 
-  ai_contribution {
-    require_ai_flag true
-    ai_flag_key "ai-authored"
-    trusted_agents [
-      "perplexity-ble-guard-v1"
-    ]
-  }
-}
+record AndroidPoliciesV1
+  jdk_version         string
+  require_gradle_cache bool
+
+record WorkflowPoliciesV1
+  require_node24_env  bool
+  approved_actions    string
+
+record AiContributionPoliciesV1
+  require_ai_flag   bool
+  ai_flag_key       string
+  trusted_agents    string
+
+record RepoGovernanceV1
+  repository        string
+  default_branch    string
+  ci_jobs           CiJobRequirementV1
+  catalog_policies  CatalogPoliciesV1
+  rust_policies     RustPoliciesV1
+  android_policies  AndroidPoliciesV1
+  workflow_policies WorkflowPoliciesV1
+  ai_contribution   AiContributionPoliciesV1
+
+# Instance for BLE-Code
+governance RepoGovernanceV1
+  repository     "BLE-Code"
+  default_branch "main"
+
+  ci_jobs
+    CiJobRequirementV1
+      name          "tools-ci"
+      kind          tools-ci
+      workflow_file ".github/workflows/tools-ci.yml"
+      paths_glob    "tools/**"
+      required      true
+
+    CiJobRequirementV1
+      name          "catalog-ci"
+      kind          catalog-ci
+      workflow_file ".github/workflows/catalog-ci.yml"
+      paths_glob    "schemas/**"
+      required      true
+
+    CiJobRequirementV1
+      name          "perplexity-ci"
+      kind          perplexity-ci
+      workflow_file ".github/workflows/perplexity-ci.yml"
+      paths_glob    "schemas/perplexity-*-guard-*.aln"
+      required      true
+
+    CiJobRequirementV1
+      name          "examples"
+      kind          examples
+      workflow_file ".github/workflows/examples.yml"
+      paths_glob    "examples/**"
+      required      false
+
+    CiJobRequirementV1
+      name          "rust-ci"
+      kind          rust-ci
+      workflow_file ".github/workflows/ci.yml"
+      paths_glob    "crates/**"
+      required      true
+
+    CiJobRequirementV1
+      name          "android-ci"
+      kind          android-ci
+      workflow_file ".github/workflows/android-ci.yml"
+      paths_glob    "docs/android/**"
+      required      false
+
+  catalog_policies
+    CatalogPoliciesV1
+      require_catalog_up_to_date      true
+      require_playbook_schema_resolve true
+      require_aln_lint_pass           true
+
+  rust_policies
+    RustPoliciesV1
+      msrv                  "1.75"
+      edition               "2024"
+      deny_clippy_warnings  true
+      forbid_unsafe_in_core true
+
+  android_policies
+    AndroidPoliciesV1
+      jdk_version          "17"
+      require_gradle_cache true
+
+  workflow_policies
+    WorkflowPoliciesV1
+      require_node24_env true
+      approved_actions   "actions/checkout@v4,dtolnay/rust-toolchain@v1,actions/setup-java@v4,gradle/actions/setup-gradle@v4,actions/upload-artifact@v4,Swatinem/rust-cache@v2"
+
+  ai_contribution
+    AiContributionPoliciesV1
+      require_ai_flag true
+      ai_flag_key     "ai-authored"
+      trusted_agents  "perplexity-ble-guard-v1"
