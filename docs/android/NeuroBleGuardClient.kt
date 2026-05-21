@@ -67,7 +67,6 @@ data class BleGuardResponse(
 class NeuroBleGuardClient(
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
-    // If you wrap the FFI call behind a tiny HTTP bridge, use OkHttp.
     private val client = OkHttpClient()
     private val mediaTypeJson = "application/json; charset=utf-8".toMediaType()
 
@@ -76,7 +75,7 @@ class NeuroBleGuardClient(
         val body = payload.toRequestBody(mediaTypeJson)
 
         val httpRequest = Request.Builder()
-            .url("http://127.0.0.1:8765/ble-guard") // or your local bridge
+            .url("http://127.0.0.1:8765/ble-guard") // local bridge endpoint
             .post(body)
             .build()
 
