@@ -1,0 +1,65 @@
+name: Catalog CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "schemas/**"
+      - "playbooks/**"
+      - "crates/**"
+      - "docs/**"
+      - "configs/**"
+      - "examples/**"
+      - "tools/**"
+      - ".github/workflows/catalog-ci.yml"
+  pull_request:
+    paths:
+      - "schemas/**"
+      - "playbooks/**"
+      - "crates/**"
+      - "docs/**"
+      - "configs/**"
+      - "examples/**"
+      - "tools/**"
+      - ".github/workflows/catalog-ci.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE_24: "true"
+
+jobs:
+  repo-catalog:
+    name: Repo catalog and playbook links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install sqlite3
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3
+
+      - name: Seed catalog
+        run: |
+          chmod +x tools/seed_catalog.sh
+          ./tools/seed_catalog.sh
+
+      - name: Link playbooks to schemas
+        run: |
+          chmod +x tools/link_playbooks.sh
+          ./tools/link_playbooks.sh
+
+      - name: Regenerate repo inventory
+        run: |
+          sqlite3 repo_index.db ".mode markdown" \
+            "SELECT file_type AS 'Type', path AS 'Path', description AS 'Description' FROM files ORDER BY file_type, path;" \
+            > docs/repo_inventory.md
+
+      - name: Check inventory is committed
+        run: |
+          if ! git diff --exit-code -- docs/repo_inventory.md; then
+            echo "docs/repo_inventory.md is out of date. Please commit the regenerated file."
+            exit 1
+          fi
