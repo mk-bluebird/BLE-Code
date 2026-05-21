@@ -1,0 +1,15 @@
+[package]
+name = "ble-tools-workspace-lint"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+description = "Workspace hygiene linter for BLE-Code Cargo manifests."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+camino = "1.1"
+cargo_metadata = "0.18"
+toml_edit = "0.22"
