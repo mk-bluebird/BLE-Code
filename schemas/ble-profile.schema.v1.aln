@@ -1,0 +1,92 @@
+schema BleProfileV1 {
+  version "1.0.0"
+
+  enum BlePhyV1 {
+    LE1M
+    LE2M
+    LECodedS2
+    LECodedS8
+  }
+
+  enum ServiceRoleV1 {
+    Sensor
+    Control
+    Admin
+  }
+
+  enum NeurorightsTagV1 {
+    BasicTelemetry
+    BciIntent
+    BiometricId
+    Unknown
+  }
+
+  record SubjectProfileV1 {
+    subject_id string
+    roh_ceiling float        // must be <= 0.3
+    allow_ble bool
+    max_parallel_devices u32
+  }
+
+  record DeviceClassPolicyV1 {
+    class_id string
+    min_phy BlePhyV1
+    max_phy BlePhyV1
+
+    require_encryption bool
+    require_mic bool
+    require_bonding bool
+
+    max_conn_interval_ms u32
+    max_pdu_bytes u16
+
+    allow_cte bool
+    allow_bci_payload bool
+  }
+
+  record ServicePolicyV1 {
+    class_id string
+    service_uuid string
+    role ServiceRoleV1
+
+    allow_read bool
+    allow_write bool
+    allow_notify bool
+
+    roh_weight float          // must be >= 0.0
+    neurorights_tag NeurorightsTagV1
+
+    // For NUS / OpenBCI-style framed data over BLE.
+    passthrough bool
+  }
+
+  record BleProfileShardV1 {
+    subject SubjectProfileV1
+    device_class_policies [DeviceClassPolicyV1]
+    service_policies [ServicePolicyV1]
+
+    // Invariants:
+    // - subject.roh_ceiling <= 0.3
+    // - sum of roh_weight for services with neurorights_tag == BciIntent
+    //   must be <= subject.roh_ceiling.
+    invariant roh_ceiling_upper_bound {
+      subject.roh_ceiling <= 0.3
+    }
+
+    invariant non_negative_roh_weight {
+      forall svc in service_policies {
+        svc.roh_weight >= 0.0
+      }
+    }
+
+    invariant bci_roh_budget {
+      let ceiling = subject.roh_ceiling
+      let total_bci =
+        sum svc.roh_weight
+        for svc in service_policies
+        where svc.neurorights_tag == NeurorightsTagV1::BciIntent
+
+      total_bci <= ceiling
+    }
+  }
+}
