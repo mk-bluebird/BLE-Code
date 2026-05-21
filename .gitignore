@@ -1,0 +1,23 @@
+# Rust
+/target
+**/*.rs.bk
+*.pdb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*~
+
+# macOS
+.DS_Store
+
+# Build artefacts
+*.o
+*.so
+*.dylib
+
+# Android / Gradle
+docs/android/.gradle/
+docs/android/build/
+docs/android/local.properties
