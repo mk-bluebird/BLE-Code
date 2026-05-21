@@ -9,6 +9,9 @@ on:
       - "docs/ai-usage-perplexity-ble-guard-v1.md"
       - "examples/perplexity-*.json"
       - "tools/check_perplexity_profile.sh"
+      - "tools/check_code_patterns.sh"
+      - "tools/core_purity.toml"
+      - "crates/ble-tools-core-purity/**"
       - ".github/workflows/perplexity-ci.yml"
   pull_request:
     paths:
@@ -17,6 +20,9 @@ on:
       - "docs/ai-usage-perplexity-ble-guard-v1.md"
       - "examples/perplexity-*.json"
       - "tools/check_perplexity_profile.sh"
+      - "tools/check_code_patterns.sh"
+      - "tools/core_purity.toml"
+      - "crates/ble-tools-core-purity/**"
       - ".github/workflows/perplexity-ci.yml"
 
 env:
@@ -64,6 +70,12 @@ jobs:
           tools/check_code_patterns.sh configs/perplexity-ble-guard-config.json
         env:
           PATTERN_PROFILE: "perplexity-ble-guard"
+
+      # NEW: Core purity check for core Rust crates
+      - name: Core purity (Rust)
+        run: |
+          BLE_CORE_PURITY_CONFIG=tools/core_purity.toml \
+          cargo run -p ble-tools-core-purity --quiet
 
       - name: Build dummy BleGuard smoke test
         run: |
