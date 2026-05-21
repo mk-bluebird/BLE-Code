@@ -1,0 +1,15 @@
+[package]
+name = "ble-guard"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+description = "Non-actuating BLE policy engine enforcing neurorights and RoH."
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+ble-model = { path = "../ble-model" }
+ble-governance = { path = "../ble-governance" }
