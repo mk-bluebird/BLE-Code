@@ -1,0 +1,74 @@
+# File: .github/workflows/perplexity-ci.yml
+name: Perplexity BLE Guard CI
+
+on:
+  push:
+    paths:
+      - "schemas/perplexity-ble-guard-v1.profile.aln"
+      - "configs/perplexity-ble-guard-config.json"
+      - "docs/ai-usage-perplexity-ble-guard-v1.md"
+      - "examples/perplexity-*.json"
+      - "tools/check_perplexity_profile.sh"
+      - ".github/workflows/perplexity-ci.yml"
+  pull_request:
+    paths:
+      - "schemas/perplexity-ble-guard-v1.profile.aln"
+      - "configs/perplexity-ble-guard-config.json"
+      - "docs/ai-usage-perplexity-ble-guard-v1.md"
+      - "examples/perplexity-*.json"
+      - "tools/check_perplexity_profile.sh"
+      - ".github/workflows/perplexity-ci.yml"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: "false"
+  FORCEJAVASCRIPTACTIONSTONODE24: "true"
+
+jobs:
+  perplexity-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install ALN CLI and jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          # Replace this with your actual ALN CLI install or use a prebuilt binary.
+          cargo install aln-cli || true
+
+      - name: Run Perplexity profile validator
+        run: |
+          chmod +x tools/check_perplexity_profile.sh
+          tools/check_perplexity_profile.sh > perplextiy_profile_check.ndjson
+        env:
+          ALN_CLI_BIN: aln-cli
+          JQ_BIN: jq
+
+      - name: Upload validator report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perplexity-profile-check
+          path: perplextiy_profile_check.ndjson
+
+      - name: Run Perplexity code pattern checks
+        run: |
+          chmod +x tools/check_code_patterns.sh
+          tools/check_code_patterns.sh configs/perplexity-ble-guard-config.json
+        env:
+          PATTERN_PROFILE: "perplexity-ble-guard"
+
+      - name: Build dummy BleGuard smoke test
+        run: |
+          cargo build --package ble-guard --tests
+
+      - name: Run BleGuard smoke test for Perplexity profile
+        run: |
+          cargo test --package ble-guard --test perplexity_profile_smoke -- --nocapture
