@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 
-use anyhow::{anyhow, Context, Result};
-use cargo_metadata::{Metadata, MetadataCommand, Package};
+use anyhow::{Context, Result, anyhow};
 use camino::Utf8PathBuf;
+use cargo_metadata::{Metadata, MetadataCommand, Package};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 
@@ -19,7 +19,9 @@ fn main() -> Result<()> {
 }
 
 fn run_lint() -> Result<()> {
-    let metadata = MetadataCommand::new().exec().context("cargo metadata failed")?;
+    let metadata = MetadataCommand::new()
+        .exec()
+        .context("cargo metadata failed")?;
 
     check_members_vs_filesystem(&metadata)?;
     check_workspace_deps(&metadata)?;
@@ -68,7 +70,9 @@ fn check_members_vs_filesystem(metadata: &Metadata) -> Result<()> {
 
     for m in &fs_members {
         if !declared_members.contains(m) {
-            errors.push(format!("Filesystem member not listed in [workspace.members]: {m}"));
+            errors.push(format!(
+                "Filesystem member not listed in [workspace.members]: {m}"
+            ));
         }
     }
 
