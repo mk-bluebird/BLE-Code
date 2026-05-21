@@ -1,0 +1,43 @@
+governance RepoGovernanceV1 {
+  version "1.0.0"
+
+  ci_required_jobs [
+    "workspace-hygiene",
+    "fmt",
+    "clippy",
+    "test",
+    "governance-lint"
+  ]
+
+  rust_policies {
+    msrv "1.75"
+    edition "2024"
+    deny_clippy_warnings true
+    forbid_unsafe_in_core true
+  }
+
+  android_policies {
+    jdk_version "17"
+    require_gradle_cache true
+  }
+
+  workflow_policies {
+    require_node24_env true
+    approved_actions [
+      "actions/checkout@v4",
+      "dtolnay/rust-toolchain@v1",
+      "actions/setup-java@v4",
+      "gradle/actions/setup-gradle@v4",
+      "actions/upload-artifact@v4",
+      "Swatinem/rust-cache@v2"
+    ]
+  }
+
+  ai_contribution {
+    require_ai_flag true
+    ai_flag_key "ai-authored"
+    trusted_agents [
+      "perplexity-ble-guard-v1"
+    ]
+  }
+}
