@@ -68,5 +68,5 @@ cmp_owned = "deny"
 naive_bytecount = "deny"
 
 # Warn on pedantic/nursery but don't block CI
-pedantic = "warn"
-nursery = "warn"
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
