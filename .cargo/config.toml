@@ -1,0 +1,36 @@
+[net]
+retry = 2
+git-fetch-with-cli = true
+offline = false
+
+[registries]
+# Default crates.io registry
+crates-io]
+index = "https://github.com/rust-lang/crates.io-index"
+
+# Optional internal registry example (replace URL when used)
+# my-org]
+# index = "https://my-registry.example.com/index"
+
+[registry]
+default = "crates-io"
+
+[source.crates-io]
+replace-with = "crates-io"
+
+# Example of pinning a local mirror (uncomment when you have one)
+# [source.my-mirror]
+# registry = "https://my-mirror.example.com/index"
+
+[build]
+# Ensure consistent target and host triples
+target-dir = "target"
+jobs = 0                # Let CI pick CPU cores; can pin to reduce jitter
+incremental = false     # More reproducible builds, less disk use
+rustflags = [
+    "-Cdebuginfo=1",
+    "-Coverflow-checks=on",
+]
+
+[term]
+color = "always"
