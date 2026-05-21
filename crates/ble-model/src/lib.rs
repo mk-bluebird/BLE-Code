@@ -168,3 +168,15 @@ impl BleIntent {
         }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BleEnvironmentSample {
+    pub sample_id: Uuid,
+    pub timestamp_utc: String,
+    /// Number of devices seen in this scan.
+    pub device_count: u32,
+    /// Max RSSI across devices.
+    pub max_rssi_dbm: i16,
+    /// Average RSSI across devices.
+    pub avg_rssi_dbm: Option<f32>,
+}
