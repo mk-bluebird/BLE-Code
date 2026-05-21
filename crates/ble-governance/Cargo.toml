@@ -13,3 +13,6 @@ thiserror = { workspace = true }
 
 # ALN loader – this should be your existing ALN → serde bridge crate name.
 aln-core = { version = "0.1.0", path = "../../crates/aln-core" }
+
+[lints]
+workspace = true
