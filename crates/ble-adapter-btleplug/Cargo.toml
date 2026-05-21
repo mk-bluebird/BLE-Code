@@ -18,3 +18,6 @@ ble-model = { path = "../ble-model" }
 
 # Only pulled in when feature = "btleplug"
 btleplug = { version = "0.11", optional = true }
+
+[lints]
+workspace = true
