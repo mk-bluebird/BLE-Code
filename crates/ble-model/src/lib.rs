@@ -1,3 +1,5 @@
+// File: crates/ble-model/src/lib.rs
+
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};
@@ -107,7 +109,10 @@ impl BleIntent {
     pub fn validate_invariants(&self) -> Result<(), String> {
         match self {
             BleIntent::Scan { .. } => Ok(()),
-            BleIntent::Connect { class_id, device_id } => {
+            BleIntent::Connect {
+                class_id,
+                device_id,
+            } => {
                 if class_id.is_empty() {
                     return Err("class_id must not be empty".into());
                 }
@@ -135,12 +140,10 @@ impl BleIntent {
                 if device_id.is_empty() {
                     return Err("device_id must not be empty".into());
                 }
-                let _ = uuid::Uuid::parse_str(service_uuid).map_err(|e| {
-                    format!("service_uuid must be a valid UUID: {e}")
-                })?;
-                let _ = uuid::Uuid::parse_str(characteristic_uuid).map_err(|e| {
-                    format!("characteristic_uuid must be a valid UUID: {e}")
-                })?;
+                let _ = uuid::Uuid::parse_str(service_uuid)
+                    .map_err(|e| format!("service_uuid must be a valid UUID: {e}"))?;
+                let _ = uuid::Uuid::parse_str(characteristic_uuid)
+                    .map_err(|e| format!("characteristic_uuid must be a valid UUID: {e}"))?;
                 Ok(())
             }
         }
