@@ -12,7 +12,7 @@ serde_json = { workspace = true }
 uuid = { workspace = true }
 
 ble-model = { path = "../ble-model" }
-aln-core = { version = "0.1.0", path = "../../crates/aln-core" }
+# aln-core = { version = "0.1.0", path = "../../crates/aln-core" }
 
 [lints]
 workspace = true
