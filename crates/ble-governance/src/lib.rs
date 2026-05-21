@@ -3,6 +3,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod aln_loader;
+
 /// Neurorights semantics of a service.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
