@@ -1,3 +1,5 @@
+// File: crates/ble-env-ingest/src/aln_append.rs
+
 #![forbid(unsafe_code)]
 
 use ble_model::{BleDeviceObservation, BleEnvironmentSample, BlePhy};
@@ -17,7 +19,7 @@ pub fn append_to_aln(
     sample: &BleEnvironmentSample,
     devices: &[BleDeviceObservation],
 ) -> io::Result<()> {
-       let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
 
     // 1. Environment sample header.
     let env_record = format_environment_record(sample);
