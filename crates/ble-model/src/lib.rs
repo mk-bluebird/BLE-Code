@@ -5,7 +5,8 @@
 //!
 //! This crate provides pure data models for BLE intents, link parameters,
 //! and observations. All types are non-actuating and safe to serialize.
-#![allow(missing_docs)]  // Temporary: comprehensive docs in progress
+#![allow(missing_docs)]
+#![allow(clippy::struct_excessive_bools)]
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -141,6 +142,19 @@ impl BleLinkParams {
         }
         if self.max_pdu_bytes == 0 {
             return Err("max_pdu_bytes must be > 0".into());
+        }
+        Ok(())
+    }
+}
+
+impl BleEnvironmentSample {
+    /// Validates basic structural invariants.
+    ///
+    /// # Errors
+    /// Returns an error if avg_rssi is present when device_count is zero.
+    pub fn validate_invariants(&self) -> Result<(), String> {
+        if self.device_count == 0 && self.avg_rssi_dbm.is_some() {
+            return Err("avg_rssi_dbm must be None when device_count is 0".into());
         }
         Ok(())
     }
