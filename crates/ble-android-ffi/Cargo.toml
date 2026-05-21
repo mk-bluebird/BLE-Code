@@ -17,3 +17,6 @@ once_cell = "1.19"
 ble-model = { path = "../ble-model" }
 ble-guard = { path = "../ble-guard" }
 ble-governance = { path = "../ble-governance" }
+
+[lints]
+workspace = true
