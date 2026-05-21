@@ -1,0 +1,42 @@
+TITLE schemas/workspace-hygiene.v1.aln
+
+header WorkspaceHygiene v1.0.0
+
+record WorkspaceHygieneProfile
+  profileid string
+  version string
+  description string
+  reposcope string              ; e.g. "ALN-Blockchain", "row-rpm-ledger"
+  toolchains list string        ; rust-toolchain triples, node versions, etc.
+  lintprofileid string          ; ID of aln-lint-profile.v1.aln record
+  systemdeps list string        ; logical SystemPackage.logicalid values
+  cachepolicies list string     ; IDs or inline names of cache policies
+  policyflags list string       ; e.g. "offline-only", "no-root", "limited-fs"
+  createdat datetime
+  createdby string              ; DID
+  updatedat datetime
+  updatedby string              ; DID
+
+record CachePolicy
+  cachepolicyid string
+  description string
+  scope string                  ; e.g. "cargo-target", "npm-cache", "index-snapshots"
+  maxbytes u64
+  maxagehours u32
+  keystrategy string            ; e.g. "toolchain+profileid", "git-commit"
+  allowedevictions bool
+
+record ToolchainBinding
+  bindingid string
+  profileid string              ; WorkspaceHygieneProfile.profileid
+  language string               ; "rust", "node", "java", ...
+  versionstring string          ; e.g. "1.85.0", "lts/*"
+  installhint string            ; human/AI hint, e.g. "use rustup with channel stable"
+  notes string?
+
+record WorkspaceSystemBinding
+  bindingid string
+  profileid string              ; WorkspaceHygieneProfile.profileid
+  logicalpackageid string       ; SystemPackage.logicalid from system-deps.v1.aln
+  required bool
+  notes string?
