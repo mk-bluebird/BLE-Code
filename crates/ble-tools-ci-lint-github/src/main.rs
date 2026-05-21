@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use glob::glob;
 use serde::Deserialize;
 use std::collections::BTreeSet;
@@ -28,7 +28,9 @@ fn run_lint() -> Result<()> {
     }
 
     if workflow_files.is_empty() {
-        return Err(anyhow!("no GitHub workflows found under .github/workflows"));
+        return Err(anyhow!(
+            "no GitHub workflows found under .github/workflows"
+        ));
     }
 
     for path in &workflow_files {
@@ -60,7 +62,10 @@ fn check_node24_env(
     let env = doc.get("env");
     match env {
         Some(serde_yaml::Value::Mapping(map)) => {
-            if !map.keys().any(|k| k.as_str() == Some("FORCE_JAVASCRIPT_ACTIONS_TO_NODE_24")) {
+            if !map
+                .keys()
+                .any(|k| k.as_str() == Some("FORCE_JAVASCRIPT_ACTIONS_TO_NODE_24"))
+            {
                 errors.push(format!(
                     "{}: missing env FORCE_JAVASCRIPT_ACTIONS_TO_NODE_24",
                     path.display()
@@ -89,7 +94,7 @@ fn check_approved_actions(
         "actions/setup-java@v4",
         "gradle/actions/setup-gradle@v4",
         "actions/upload-artifact@v4",
-        "Swatinem/rust-cache@v2"
+        "Swatinem/rust-cache@v2",
     ]
     .into_iter()
     .collect();
@@ -122,8 +127,9 @@ fn check_required_jobs_present(
     errors: &mut Vec<String>,
 ) -> Result<()> {
     // Required jobs that must never be removed (no rollback).
-    let required_jobs: BTreeSet<&str> =
-        ["workspace-hygiene", "fmt", "clippy", "test"].into_iter().collect();
+    let required_jobs: BTreeSet<&str> = ["workspace-hygiene", "fmt", "clippy", "test"]
+        .into_iter()
+        .collect();
 
     let mut present = BTreeSet::new();
     if let Some(jobs) = doc.get("jobs").and_then(|j| j.as_mapping()) {
