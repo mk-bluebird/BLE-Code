@@ -9,3 +9,6 @@ description = "Library-agnostic BLE grammar for intents, link parameters, and ob
 [dependencies]
 serde = { workspace = true }
 uuid = { workspace = true }
+
+[lints]
+workspace = true
