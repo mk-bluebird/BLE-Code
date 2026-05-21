@@ -83,18 +83,8 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Clippy (allow pedantic/nursery warnings)
-        run: |
-          cargo clippy --all-targets --all-features -- -D warnings \
-            -A unknown-lints \
-            -A renamed-and-removed-lints \
-            -A clippy::missing-docs \
-            -A clippy::missing-errors-doc \
-            -A clippy::missing-panics-doc \
-            -A clippy::struct-excessive-bools \
-            -A clippy::use-self \
-            -A clippy::derive-partial-eq-without-eq \
-            -A clippy::lint-groups-priority
+      - name: Clippy (deny warnings)
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
   test:
     name: Test
