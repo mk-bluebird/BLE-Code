@@ -2,8 +2,12 @@
 //! BLE governance layer for neurorights-aware BLE profiles.
 //!
 //! This crate defines subject-level profiles, device class policies,
-//! service policies, and Risk-of-Harm (RoH) invariants.
-#![allow(missing_docs)]  // Temporary: comprehensive docs in progress
+//! service policies, and Risk-of-Harm (`RoH`) invariants.
+#![allow(missing_docs)]
+#![allow(clippy::doc_markdown)]
+#![allow(clippy::struct_excessive_bools)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::must_use_candidate)]
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -12,13 +16,9 @@ use thiserror::Error;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum NeurorightsTag {
-    /// Basic telemetry (battery, accelerometer, etc.)
     BasicTelemetry,
-    /// BCI intent or derived mental state
     BciIntent,
-    /// Biometric identifier derived from signals
     BiometricId,
-    /// Unclassified or unknown data type
     Unknown,
 }
 
@@ -26,11 +26,8 @@ pub enum NeurorightsTag {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ServiceRole {
-    /// Read-only sensor data
     Sensor,
-    /// Bidirectional control channel
     Control,
-    /// Administrative/configuration service
     Admin,
 }
 
