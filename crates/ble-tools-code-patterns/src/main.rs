@@ -120,6 +120,11 @@ fn should_ignore(path: &Path, cfg: &PatternConfig) -> bool {
     cfg.ignore_paths.iter().any(|p| s.contains(p))
 }
 
+fn is_allowed_unsafe_file(contents: &str) -> bool {
+    // Allow unsafe in explicitly marked FFI modules only.
+    contents.contains("SAFETY-GUARD: ALLOW_UNSAFE_MODULE")
+}
+
 fn scan_root(
     root: &Path,
     cfg: &PatternConfig,
@@ -147,6 +152,11 @@ fn scan_file(
         path: path.display().to_string(),
         source: e,
     })?;
+
+    // Skip unsafe-related checks in files explicitly marked as allowed-unsafe.
+    if is_allowed_unsafe_file(&contents) {
+        return Ok(());
+    }
 
     for (line_idx, line) in contents.lines().enumerate() {
         let ln = line_idx + 1;

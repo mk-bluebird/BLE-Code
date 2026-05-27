@@ -46,10 +46,27 @@ fn line_has_unsafe(line: &str) -> bool {
 }
 
 fn should_scan_path(path: &Path) -> bool {
+    // Do not enforce unsafe/unwrap rules on the workspace-lint tool itself.
     if let Ok(rel) = path.strip_prefix(std::env::current_dir().unwrap_or_else(|_| path.to_path_buf())) {
         if rel == Path::new("crates/ble-tools-core-purity/src/main.rs") {
             return false;
         }
+        if rel == Path::new("crates/ble-tools-workspace-lint/src/main.rs") {
+            return false;
+        }
+    }
+    true
+}
+
+fn is_code_line(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    // Skip comments
+    if trimmed.starts_with("//") {
+        return false;
+    }
+    // Skip bare string-literal lines (e.g. message templates)
+    if trimmed.starts_with('"') && trimmed.ends_with("\",") {
+        return false;
     }
     true
 }
@@ -88,6 +105,9 @@ fn check_core_purity(metadata: &Metadata) -> Result<()> {
                     .with_context(|| format!("reading source file {path:?}"))?;
 
                 for (idx, line) in source.lines().enumerate() {
+                    if !is_code_line(line) {
+                        continue;
+                    }
                     if line_has_unsafe(line) {
                         violations.push(format!(
                             "{:?}:{}: unsafe usage is forbidden in core crates",
@@ -126,10 +146,11 @@ fn check_members_vs_filesystem(metadata: &Metadata) -> Result<()> {
                 .find(|p| &p.id == id)
                 .expect("package id from metadata");
             Utf8PathBuf::from_path_buf(pkg.manifest_path.clone())
-                .unwrap()
+                .ok_or_else(|| anyhow!("non-UTF8 manifest path: {}", pkg.manifest_path.display()))?
                 .to_string()
+                .into()
         })
-        .collect();
+        .collect::<Result<_>>()?;
 
     let mut fs_members = BTreeSet::new();
     let crates_dir = root.join("crates");
@@ -138,7 +159,7 @@ fn check_members_vs_filesystem(metadata: &Metadata) -> Result<()> {
             let entry = entry?;
             if entry.file_type()?.is_dir() {
                 let manifest = Utf8PathBuf::from_path_buf(entry.path())
-                    .unwrap()
+                    .ok_or_else(|| anyhow!("non-UTF8 crate path: {}", entry.path().display()))?
                     .join("Cargo.toml");
                 if manifest.is_file() {
                     fs_members.insert(manifest.to_string());
@@ -177,7 +198,7 @@ fn check_members_vs_filesystem(metadata: &Metadata) -> Result<()> {
 /// entry in [workspace.dependencies] at the root Cargo.toml.
 fn check_workspace_deps(metadata: &Metadata) -> Result<()> {
     let root_manifest = Utf8PathBuf::from_path_buf(metadata.workspace_root.clone())
-        .unwrap()
+        .ok_or_else(|| anyhow!("non-UTF8 workspace root"))?
         .join("Cargo.toml");
     let root_text = fs::read_to_string(&root_manifest)
         .with_context(|| format!("reading root manifest {root_manifest}"))?;

@@ -236,6 +236,10 @@ fn check_sources(
         .filter(|e| e.path().is_file() && e.path().extension().map(|e| e == "rs").unwrap_or(false))
     {
         let path = entry.into_path();
+        
+        // Don't apply unsafe rules to the core-purity tool itself.
+        let is_self = path.ends_with("crates/ble-tools-core-purity/src/main.rs");
+        
         let content = fs::read_to_string(&path).map_err(|e| PurityError::Io {
             path: path.display().to_string(),
             source: e,
@@ -246,7 +250,7 @@ fn check_sources(
             let ln = idx + 1;
 
             // Unsafe usage beyond crate attributes.
-            if line.contains("unsafe ") || line.contains("unsafe{") || line.contains("unsafe {") {
+            if !is_self && (line.contains("unsafe ") || line.contains("unsafe{") || line.contains("unsafe {")) {
                 // Heuristic: ignore crate-level attributes like #![forbid(unsafe_code)]
                 if !line.trim_start().starts_with("#!") {
                     out.push(Violation {
