@@ -1,5 +1,5 @@
 # .cargo/config.toml
-# BLE-Code workspace config for Rust 1.85+ CI
+# BLE-Code workspace config for Rust 1.88+ CI
 
 [net]
 retry = 2
