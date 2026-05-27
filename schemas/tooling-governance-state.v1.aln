@@ -1,0 +1,39 @@
+aln shard ToolingGovernanceState.v1
+
+record ToolingGovernanceState
+  id               String!   # e.g., tooling-governance.ble-code.v1
+  projectid        String!   # repo logical name, e.g., BLE-Code
+  version          String!   # semver, for migration tracking
+  generated_at_utc Timestamp!
+  generator        String!   # e.g., ble-tooling-governance-cli 0.1.0
+
+  # Core hard governance flags
+  unsafe_forbidden_core        Bool!
+  unwrap_forbidden_core        Bool!
+  self_modification_forbidden  Bool!
+  soulmodelingforbidden        Bool!
+
+  # Workspace boundaries
+  workspace_root        String!         # e.g., crates/, src/
+  workspace_edit_allowed List String!   # prefix- or glob-like paths
+
+  # Autonomy bands and agent policy
+  default_autonomy_band  Enum! SniffOnly, GovernedDig, DeepAutonomy
+  agent_overrides        List ToolingAgentOverride
+
+  # Logging & audit linkage
+  codeevent_schema_id     String!   # points to CodeEvent ALN schema
+  abort_and_flush_hex     String!   # canonical hex stamp for violations
+  kerew_profile_id        String!   # EcoWealthMetrics ref for this policy
+
+  # Lifecycle
+  status Enum! draft, active, deprecated
+  attested_by          List DID!
+  signing_manifest_ref DID!
+  chain_of_custody_ref DID!
+
+record ToolingAgentOverride
+  agent_id       String!  # “perplexity-ghostnet-v1”, “copilot-ble-android”
+  autonomy_band  Enum! SniffOnly, GovernedDig, DeepAutonomy
+  allowed_paths  List String!   # narrower than workspace_edit_allowed
+  notes          String!
