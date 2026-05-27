@@ -1,4 +1,7 @@
 // Filename: crates/ble-android-ffi/src/ffi_safety.rs
+// SAFETY-GUARD: ALLOW_UNSAFE_MODULE
+// This module is the only allowed unsafe FFI surface for ble-android-ffi.
+// All other modules must call these functions instead of using `unsafe` directly.
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 

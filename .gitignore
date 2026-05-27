@@ -1,90 +1,40 @@
 ```
-# Rust/Cargo specific ignores
+# Rust/Cargo specific
 target/
 Cargo.lock
-**/*.rs.bk
+*.rs.bk
+*.rlib
 
 # Dependencies
 vendor/
 
-# Logs
+# Logs and temp files
 *.log
-
-# Temporary files
 *.tmp
-*~
-.DS_Store
-Thumbs.db
 
-# Environment files
+# Environment
 .env
 .env.local
-*.env.*
+.env.*
 
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# IDE files
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
 # Build artifacts
-*.o
-*.obj
-*.a
-*.lib
-*.so
-*.dylib
-*.dll
-*.exe
-*.out
-
-# Python (if included in project)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-.eggs/
-
-# Node.js (if included in project)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Compiled Python
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-
-# MyPy cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pytest cache
-.pytest_cache/
-
-# Gradle
-.gradle/
+dist/
 build/
-
-# Java
-*.class
-*.jar
-*.war
-*.ear
-*.nar
-hs_err_pid*
-
-# C/C++
 *.o
 *.obj
 *.a
@@ -93,30 +43,4 @@ hs_err_pid*
 *.dylib
 *.dll
 *.exe
-*.out
-*.ilk
-*.pdb
-*.iobj
-*.ipdb
-*.tlog
-
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
 ```
