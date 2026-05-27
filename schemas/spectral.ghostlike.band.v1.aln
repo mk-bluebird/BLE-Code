@@ -1,0 +1,90 @@
+TITLE schemas/spectral.ghostlike.band.v1.aln
+
+header SpectralGhostlikeBand v1.0.0
+
+record RegionSessionKey
+  location_bucket string
+  time_bucket string
+  session_id string
+
+enum OperationModeV1
+  Normal
+  Guarded
+  Deescalate
+  TerminateSafe
+
+enum HauntZoneV1
+  Control
+  Monitored
+  Restricted
+  Containment
+
+enum HauntBandV1
+  ControlLow
+  ControlUpper
+  GhostlikeMedium
+  Restricted
+  Containment
+
+record HauntDensitySnapshotV1
+  key RegionSessionKey
+  haunt_density float    # 0.0 .. 1.0 normalized
+  zone HauntZoneV1
+
+record TokenWindowV1
+  fear float             # FEAR token level
+  sanity float           # SANITY token level
+  hp float               # HP floor
+  risk_index float       # Composite risk index X
+  operation_mode OperationModeV1
+
+record GovernanceFlagsV1
+  soul_modeling_forbidden bool
+  spectral_quantification_active bool
+  non_interference_required bool
+
+record GhostlikeEnvelopeConfigV1
+  h_min float            # recommended 0.20
+  h_max float            # recommended 0.45
+  x_max float            # SPOOK risk cap
+  fear_min float
+  sanity_min float
+  hp_min float
+
+record GhostlikeBandDerivedV1
+  key RegionSessionKey
+  haunt_band HauntBandV1
+  is_ghostlike_band bool
+  hex_stamp string       # e.g. "0x47484f53544c494b455f53454d414e5449435f5631"
+
+invariant ghostlike_band_definition
+  forall d in GhostlikeBandDerivedV1,
+         h in HauntDensitySnapshotV1,
+         t in TokenWindowV1,
+         g in GovernanceFlagsV1,
+         cfg in GhostlikeEnvelopeConfigV1
+    where d.key == h.key
+  =>
+    # If we call this band ghostlike, all guardrails must hold.
+    if d.is_ghostlike_band
+      then
+        d.haunt_band == HauntBandV1.GhostlikeMedium &&
+        h.haunt_density >= cfg.h_min &&
+        h.haunt_density <= cfg.h_max &&
+        (h.zone == HauntZoneV1.Control || h.zone == HauntZoneV1.Monitored) &&
+        t.risk_index < cfg.x_max &&
+        (t.operation_mode == OperationModeV1.Normal ||
+         t.operation_mode == OperationModeV1.Guarded) &&
+        t.fear >= cfg.fear_min &&
+        t.sanity > 0.0 &&
+        t.hp >= cfg.hp_min &&
+        g.soul_modeling_forbidden == true &&
+        g.spectral_quantification_active == true
+    end
+
+invariant ghostlike_hex_stamp
+  forall d in GhostlikeBandDerivedV1
+  =>
+    if d.is_ghostlike_band
+      then d.hex_stamp == "0x47484f53544c494b455f53454d414e5449435f5631"
+    end
