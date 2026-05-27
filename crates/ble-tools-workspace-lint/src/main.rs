@@ -1,10 +1,11 @@
 #![forbid(unsafe_code)]
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use camino::Utf8PathBuf;
-use cargo_metadata::{Metadata, MetadataCommand, Package};
+use cargo_metadata::{Metadata, MetadataCommand};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
+use std::path::Path;
 
 fn main() -> Result<()> {
     let fail_on_error = std::env::args().any(|a| a == "--fail-on-error");
@@ -12,7 +13,7 @@ fn main() -> Result<()> {
         Ok(()) => Ok(()),
         Err(e) if fail_on_error => Err(e),
         Err(e) => {
-            eprintln!("workspace-lint: {e:?}");
+            eprintln!("core-purity: {e:?}");
             Ok(())
         }
     }
@@ -25,6 +26,86 @@ fn run_lint() -> Result<()> {
 
     check_members_vs_filesystem(&metadata)?;
     check_workspace_deps(&metadata)?;
+    check_core_purity(&metadata)?;
+
+    Ok(())
+}
+
+const UNSAFE_TOKEN: &str = "unsafe ";
+const UNSAFE_BRACED_1: &str = "unsafe{";
+const UNSAFE_BRACED_2: &str = "unsafe {";
+
+fn line_has_unsafe(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    if trimmed.starts_with("//") {
+        return false;
+    }
+    trimmed.contains(UNSAFE_TOKEN)
+        || trimmed.contains(UNSAFE_BRACED_1)
+        || trimmed.contains(UNSAFE_BRACED_2)
+}
+
+fn should_scan_path(path: &Path) -> bool {
+    if let Ok(rel) = path.strip_prefix(std::env::current_dir().unwrap_or_else(|_| path.to_path_buf())) {
+        if rel == Path::new("crates/ble-tools-core-purity/src/main.rs") {
+            return false;
+        }
+    }
+    true
+}
+
+fn check_core_purity(metadata: &Metadata) -> Result<()> {
+    let root = Utf8PathBuf::from_path_buf(metadata.workspace_root.clone())
+        .map_err(|_| anyhow!("Non-UTF8 workspace root"))?;
+    let crates_dir = root.join("crates");
+
+    let mut violations = Vec::new();
+
+    if crates_dir.is_dir() {
+        for entry in fs::read_dir(&crates_dir)? {
+            let entry = entry?;
+            if !entry.file_type()?.is_dir() {
+                continue;
+            }
+
+            let src_dir = entry.path().join("src");
+            if !src_dir.is_dir() {
+                continue;
+            }
+
+            for src_entry in fs::read_dir(&src_dir)? {
+                let src_entry = src_entry?;
+                if !src_entry.file_type()?.is_file() {
+                    continue;
+                }
+
+                let path = src_entry.path();
+                if !should_scan_path(&path) {
+                    continue;
+                }
+
+                let source = fs::read_to_string(&path)
+                    .with_context(|| format!("reading source file {path:?}"))?;
+
+                for (idx, line) in source.lines().enumerate() {
+                    if line_has_unsafe(line) {
+                        violations.push(format!(
+                            "{:?}:{}: unsafe usage is forbidden in core crates",
+                            path,
+                            idx + 1
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    if !violations.is_empty() {
+        for v in &violations {
+            eprintln!("core-purity: {v}");
+        }
+        return Err(anyhow!("core purity violations detected"));
+    }
 
     Ok(())
 }
