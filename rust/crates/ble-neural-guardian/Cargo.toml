@@ -1,0 +1,13 @@
+[package]
+name = "ble-neural-guardian"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+btleplug = "0.9"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+uuid = { version = "1.8", features = ["serde", "v4"] }
+ble-model = { path = "../ble-model" }
