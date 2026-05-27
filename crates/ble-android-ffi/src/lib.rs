@@ -5,12 +5,13 @@ use ble_guard::{BleGuard, BleGuardDecision};
 use ble_model::{BleIntent, BleLinkParams};
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::os::raw::c_char;
 use std::sync::Mutex;
 
+use crate::ffi_safety::str_from_ptr;
+
 /// Global guard instance for the process.
-/// In a real app you may want per-subject or per-profile guards.
 static GUARD: OnceCell<Mutex<BleGuard>> = OnceCell::new();
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,16 +63,12 @@ pub struct BleGuardResponse {
 /// Initialize the global guard with a serialized BleProfileShard (JSON).
 #[no_mangle]
 pub extern "C" fn init_ble_guard_from_profile_json(json: *const c_char) -> bool {
-    if json.is_null() {
-        return false;
-    }
-    let cstr = unsafe { CStr::from_ptr(json) };
-    let s = match cstr.to_str() {
-        Ok(v) => v,
+    let json_str = match str_from_ptr(json) {
+        Ok(s) => s,
         Err(_) => return false,
     };
 
-    let shard: BleProfileShard = match serde_json::from_str(s) {
+    let shard: BleProfileShard = match serde_json::from_str(json_str) {
         Ok(v) => v,
         Err(_) => return false,
     };
@@ -90,13 +87,12 @@ pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c
         let guard_cell = GUARD
             .get()
             .ok_or_else(|| "Guard not initialized".to_string())?;
-        let cstr = unsafe { CStr::from_ptr(request_json) };
-        let s = cstr
-            .to_str()
+
+        let request_str = str_from_ptr(request_json)
             .map_err(|_| "Invalid UTF-8 in request_json".to_string())?;
 
         let req: BleGuardRequest =
-            serde_json::from_str(s).map_err(|e| format!("Request JSON parse error: {e}"))?;
+            serde_json::from_str(request_str).map_err(|e| format!("Request JSON parse error: {e}"))?;
 
         let mut guard = guard_cell
             .lock()
@@ -113,7 +109,7 @@ pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c
             },
         };
 
-        Ok(match decision {
+        let response = match decision {
             BleGuardDecision::Allowed => BleGuardResponse {
                 decision: "allowed".into(),
                 reason: None,
@@ -122,21 +118,40 @@ pub extern "C" fn evaluate_ble_guard_json(request_json: *const c_char) -> *mut c
                 decision: "rejected".into(),
                 reason: Some(reason),
             },
-        })
+        };
+
+        Ok(response)
     })();
 
     let json = match result {
-        Ok(resp) => serde_json::to_string(&resp).unwrap_or_else(|_| {
-            "{\"decision\":\"rejected\",\"reason\":\"serialization error\"}".into()
-        }),
-        Err(e) => serde_json::to_string(&BleGuardResponse {
+        Ok(resp) => match serde_json::to_string(&resp) {
+            Ok(s) => s,
+            Err(_) => {
+                "{\"decision\":\"rejected\",\"reason\":\"serialization error\"}".to_string()
+            }
+        },
+        Err(e) => match serde_json::to_string(&BleGuardResponse {
             decision: "rejected".into(),
             reason: Some(e),
-        })
-        .unwrap(),
+        }) {
+            Ok(s) => s,
+            Err(_) => {
+                "{\"decision\":\"rejected\",\"reason\":\"serialization error\"}".to_string()
+            }
+        },
     };
 
-    let cstring = CString::new(json).unwrap();
+    let cstring = match CString::new(json) {
+        Ok(s) => s,
+        Err(_) => {
+            let fallback = "{\"decision\":\"rejected\",\"reason\":\"ffi CString error\"}";
+            match CString::new(fallback) {
+                Ok(s) => s,
+                Err(_) => return core::ptr::null_mut(),
+            }
+        }
+    };
+
     cstring.into_raw()
 }
 
