@@ -1,0 +1,32 @@
+aln shard ToolingEvent.v1
+
+record CodeEvent
+  event_id            String!
+  timestamp_utc       Timestamp!
+  agent_id            String!
+  event_type          Enum! Suggestion, PatchApplied, PatchRejected, GovernanceUpdate
+  repository          String!
+  commit_hash_before  String?
+  commit_hash_after   String?
+  path                String!
+  line_start          U32?
+  line_end            U32?
+  change_kind         Enum! Add, Modify, Delete
+  before_content      String?
+  after_content       String?
+  violations          List String!
+  governance_decision Enum! Approved, Rejected, RequiresHumanReview
+  reason_for_rejection String?
+  hex_stamp           String!
+  kps_grading         List F32!  # [K, P, S]
+
+record AbortAndFlushToolingEvent
+  abort_id        String!
+  timestamp_utc   Timestamp!
+  agent_id        String!
+  repository      String!
+  reason          String!
+  violations      List String!
+  hex_stamp       String!
+  kerew           List F32!  # [K, E, R, EW]
+  codeevent_ids   List String!
