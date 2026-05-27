@@ -1,0 +1,18 @@
+{
+  "shardid": "schemas/tooling-governance-state.v1.aln",
+  "kind": "ToolingGovernanceStateSchema",
+  "version": "1.0.0",
+  "filepath": "schemas/tooling-governance-state.v1.aln",
+  "hashalgo": "ALN256",
+  "hashhex": "<filled by indexer>",
+  "rohceiling": 0.0,
+  "jurisdictionid": "",
+  "isdeprecated": false,
+  "replaces": [],
+  "governedby": "ALN.MIGRATION.CYBERCOREAUTHORITY.v1",
+  "evidencebundleid": "",
+  "tags": {
+    "domain": "tooling-governance",
+    "profile": "ble-code-ghostnet"
+  }
+}
