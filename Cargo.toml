@@ -11,10 +11,9 @@ members = [
     "crates/ble-tools-workspace-lint",
     "crates/ble-tools-ci-lint-github",
     "crates/ble-tools-core-purity",
-
-    # Optional: glob pattern for additional crates and BLE tools
-    "rust/crates/*",
-    "ble-tools-*",
+    # NOTE:
+    # If you later add extra crates under rust/crates/* or ble-tools-*,
+    # add them explicitly here as real paths.
 ]
 
 [workspace.package]
