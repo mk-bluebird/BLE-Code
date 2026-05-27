@@ -1,0 +1,39 @@
+name: tooling-governance
+
+on:
+  pull_request:
+    paths:
+      - "crates/**"
+      - "schemas/**"
+      - ".github/workflows/**"
+
+jobs:
+  tooling-governance:
+    runs-on: ubuntu-22.04
+    env:
+      RUST_TOOLCHAIN: "1.85"  # match your default
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+
+      - name: Install tooling-governance CLI
+        run: |
+          cargo install tooling-governance-cli --path crates/tooling-governance-cli
+
+      - name: Run tooling governance checks (Sniff-only)
+        run: |
+          tooling-governance-cli sniff \
+            --agent-id "perplexity-ghostnet-v1" \
+            --gov-shard "schemas/tooling-governance-state.v1.aln" \
+            --sniff-out "logs/tooling-sniff.ndjson"
+
+      - name: Enforce ToolingGovernanceState (AbortAndFlushTooling)
+        run: |
+          tooling-governance-cli enforce \
+            --agent-id "perplexity-ghostnet-v1" \
+            --gov-shard "schemas/tooling-governance-state.v1.aln" \
+            --sniff-in "logs/tooling-sniff.ndjson" \
+            --events-db "tooling_events.sqlite"
