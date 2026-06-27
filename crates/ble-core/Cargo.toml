@@ -1,0 +1,15 @@
+[package]
+name = "ble-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT OR Apache-2.0"
+description = "GATT models, UUIDs, and ALN bindings for BLE-Code."
+
+[dependencies]
+serde = { workspace = true }
+uuid = { workspace = true }
+bitflags = "2.4"
+
+[lints]
+workspace = true

@@ -12,6 +12,12 @@ members = [
     "crates/ble-tools-ci-lint-github",
     "crates/ble-tools-core-purity",
     "crates/ble-tools-code-patterns",
+    # New AI-chat compatible core crates following the document pattern:
+    "crates/ble-core",
+    "crates/ble-security",
+    "crates/ble-host",
+    "crates/ble-peripheral",
+    "crates/aln-core",
     # NOTE:
     # If you later add extra crates under rust/crates/* or ble-tools-*,
     # add them explicitly here as real paths.
@@ -30,6 +36,7 @@ serde_json = "1.0"
 thiserror = "2.0"
 anyhow = "1.0"
 uuid = { version = "1.8", features = ["serde", "v4"] }
+bitflags = "2.4"
 
 [workspace.lints.rust]
 unsafe_code = "deny"
