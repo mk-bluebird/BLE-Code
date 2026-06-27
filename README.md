@@ -19,17 +19,22 @@ BLE-Code/
 ├── .gitignore
 ├── LICENSE
 ├── crates/
+│   ├── ble-core/            # GATT models, UUIDs, ALN bindings (typed surfaces)
+│   ├── ble-security/        # Pairing, bonding, link-level policy abstraction
+│   ├── ble-host/            # Central role logic, scanning, secure connect
+│   ├── ble-peripheral/      # Peripheral role implementation
 │   ├── ble-model/           # data types (BleIntent, BleLinkParams, …)
 │   ├── ble-governance/      # policy objects & RoH invariants
 │   ├── ble-guard/           # non‑actuating decision engine
 │   ├── ble-env-ingest/      # scan/environment ingestion (Termux/CLI)
 │   ├── ble-adapter-btleplug/# btleplug ↔ BleIntent mapping
 │   ├── ble-android-ffi/     # JSON‑over‑FFI bridge for Android
+│   ├── aln-core/            # ALN parsing core
 │   ├── ble-tools-workspace-lint/   # Cargo.toml hygiene checker
 │   └── ble-tools-ci-lint-github/   # GitHub workflow governance linter
 ├── schemas/                 # ALN & JSON schemas for profiles, sessions, telemetry
 ├── playbooks/               # Machine‑readable BLE sequences (NUS, OpenBCI)
-├── docs/                    # AI usage guides, Android/Kotlin reference
+├── docs/                    # AI usage guides, Android/Kotlin reference, REPOSITORY_STRUCTURE.md
 ├── configs/                 # Example guard configurations
 ├── examples/                # Runnable demos & sample telemetry
 └── .github/workflows/       # CI (Rust + Android)
@@ -39,13 +44,14 @@ BLE-Code/
 
 When you (an AI) are asked to generate BLE code:
 
-1. **Import the data model** from `ble-model` and the guard from `ble-guard`.
-2. **Build a `BleIntent`** and `BleLinkParams` that describe the desired operation—never call platform APIs directly.
-3. **Load a profile** (JSON or ALN) into a `BleGuard` instance.
-4. **Call the guard** (`guard_scan`, `guard_connect`, etc.) and **only proceed if the decision is `Allowed`**.
-5. **Translate to platform calls** (btleplug, Android BLE) using the provided adapters, *after* the guard approves.
+1. **Import the typed surfaces** from `ble-core` (`BleUuid`, `GattService`, `GattCharacteristic`, `CharSecurity`) and `ble-security` (`BleSecurityPolicy`, `BleLinkContext`).
+2. **Build typed GATT structures**—never use stringly-typed UUIDs. Use `BleUuid::from_uuid()` or well-known constants like `BleUuid::DEVICE_INFORMATION`.
+3. **Enforce security at type level**: Use `CharSecurity::cybercore_default()` for any characteristic that touches cybercore/neuromotor/bioscale state.
+4. **Use the `BleRadio` trait** (from `ble-host`) or `BlePeripheral` trait (from `ble-peripheral`) for platform-agnostic operations—both require `BleSecurityPolicy` on all connect/write operations.
+5. **Validate profiles** using `BleProfile::validate_all_services()` before deployment.
+6. **Bind sovereignty**: Ensure `host_did` and `bostrom_addr` in your ALN profile match runtime values before enabling services.
 
-See `docs/ai-usage-perplexity-ble-guard-v1.md` for a concrete, low‑energy agent contract.
+See `docs/REPOSITORY_STRUCTURE.md` for the full crate overview and `docs/ai-usage-perplexity-ble-guard-v1.md` for a concrete, low‑energy agent contract.
 
 ## Getting started (local development)
 

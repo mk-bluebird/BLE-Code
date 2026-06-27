@@ -1,0 +1,14 @@
+[package]
+name = "ble-security"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT OR Apache-2.0"
+description = "BLE pairing, bonding, and link-level policy abstraction."
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true
