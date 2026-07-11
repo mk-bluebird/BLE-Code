@@ -18,6 +18,7 @@ members = [
     "crates/ble-host",
     "crates/ble-peripheral",
     "crates/aln-core",
+    "crates/corridor_nanoswarm_telemetry",
     # NOTE:
     # If you later add extra crates under rust/crates/* or ble-tools-*,
     # add them explicitly here as real paths.
