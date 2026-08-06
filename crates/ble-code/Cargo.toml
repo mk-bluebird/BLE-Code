@@ -1,0 +1,39 @@
+
+[package]
+name = "ble-code"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "BLE scanning and device metadata crate for mk-bluebird/BLE-Code, used by CyberFS for host-safe BLE discovery"
+repository = "https://github.com/mk-bluebird/BLE-Code"
+authors = ["mk-bluebird <dev@mk-bluebird>"]
+readme = "README.md"
+
+[lib]
+name = "ble_code"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ble_code_cli"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = "1.0.120"
+chrono = { version = "0.4.38", default-features = false, features = ["clock", "serde"] }
+uuid = { version = "1.9.1", features = ["v4", "serde"] }
+anyhow = "1.0.86"
+thiserror = "1.0.61"
+tracing = { version = "0.1.40", features = ["log"] }
+log = "0.4.21"
+
+[dev-dependencies]
+kani-verifier = "0.67.0"
+
+[features]
+default = ["std"]
+std = []
+
+[package.metadata.kani]
+config = "kani.conf"
